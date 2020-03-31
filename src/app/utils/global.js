@@ -1,6 +1,10 @@
+let dir = __dirname.split('/');
+dir = dir.slice(0,-2);
+global.base_dir = dir.join('/');
+
 const low = require('lowdb'),
 FileSync = require('lowdb/adapters/FileSync'),
-adapter = new FileSync('./app/db/db.json'),
+adapter = new FileSync(base_dir +'/app/db/db.json'),
 config = require('../config');
 
 //global db

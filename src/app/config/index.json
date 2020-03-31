@@ -9,7 +9,10 @@
       "light": "static/images/lg_400_l.svg",
       "dark": "static/images/lg_400.svg"
     },
-    "subtitle_lang": "English",
+    "subtitle_lang": "english",
+    "subtitle_items":[
+      "english"
+    ],
     "history_max": 50,
     "saved_max": 50,
     "home_cache": 10800000,

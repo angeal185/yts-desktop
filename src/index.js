@@ -1,9 +1,9 @@
 const { app, session, BrowserWindow } = require('electron'),
 config = require('./app/config');
-
+console.log(__dirname)
 function init(){
   const win = new BrowserWindow(config.main_cnf);
-  win.loadFile('./app/index.html');
+  win.loadFile(__dirname + '/app/index.html');
   win.webContents.openDevTools();
 }
 

@@ -2,14 +2,13 @@ const fs = require('fs'),
 h = require('./h'),
 rout = require('./rout'),
 tpl = require('./tpl'),
-events = require('./events'),
 {ls,ss} = require('./storage');
 
 const utils = {
   pre: function(cb){
     try {
       const sheet = new CSSStyleSheet();
-      sheet.replaceSync(fs.readFileSync('./app/static/css/main.min.css', 'utf8'));
+      sheet.replaceSync(fs.readFileSync(base_dir +'/app/static/css/main.min.css', 'utf8'));
       document.adoptedStyleSheets = [sheet];
       document.title = config.main_cnf.title;
       if(!ls.get('suggest')){

@@ -520,7 +520,7 @@ const tpl = {
       items = items.parseFromString(res, "text/html");
       items = items.querySelector('.other-subs > tbody').children;
       for (let i = 0; i < items.length; i++) {
-        if(items[i].getElementsByClassName('sub-lang')[0].innerText === config.settings.subtitle_lang){
+        if(items[i].getElementsByClassName('sub-lang')[0].innerText.toLowerCase() === config.settings.subtitle_lang){
           ttl = items[i].children[2].firstChild.href.split('/').pop();
           sub_div.append(tpl.sub_item({
             lang: config.settings.subtitle_lang,

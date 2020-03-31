@@ -1,6 +1,5 @@
 
 const h = require('./h'),
-//utils = require('./index'),
 tpl = require('./tpl'),
 {ls,ss} = require('./storage');
 

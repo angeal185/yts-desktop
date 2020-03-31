@@ -87,7 +87,7 @@ const rout = {
     let title = location.hash.split('/').pop(),
     search_res = h('div.row',
       h('div.col-12.text-center',
-        h('h2', utils.capitalize(title) + ' Search Results'),
+        h('h2', utils.capitalize(decodeURIComponent(title)) + ' Search Results'),
         h('hr.w-100')
       )
     ),
