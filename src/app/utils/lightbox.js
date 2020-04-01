@@ -3,9 +3,11 @@ const h = require('./h');
 const lightbox = {
   init: function(arr){
     arr = arr.slice(0, 3);
-    cl(arr)
+
     let lb_content = document.getElementById('lb-main'),
-    lb_row = h('div.row');
+    lb_row = h('div.row'),
+    b_img = './static/img/bg_xl.png',
+    b_img_2 = './static/img/bg_sm.png';
 
     while (lb_content.firstChild) {
       lb_content.removeChild(lb_content.firstChild);
@@ -16,9 +18,9 @@ const lightbox = {
         h('div.mySlides',
           h('div.numbertext', i +' / '+ arr.length),
           h('img.img-fluid',{
-            src: arr[i-1],
+            src: arr[i-1] || b_img,
             onerror: function(evt){
-              evt.target.src = './static/img/bg_xl.png'
+              evt.target.src = b_img
             }
           })
         )
@@ -26,12 +28,12 @@ const lightbox = {
       lb_row.append(
         h('div.col-4',
           h('img.lb-demo.img-fluid.mt-4.mb-4.cp.sh-95',{
-            src: arr[i-1],
+            src: arr[i-1] || b_img_2,
             onclick: function(){
               lightbox.currentSlide(i);
             },
             onerror: function(evt){
-              evt.target.src = './static/img/bg_sm.png'
+              evt.target.src = b_img_2
             }
           })
         )

@@ -213,7 +213,8 @@ const tpl = {
     )
   },
   item_post: function(obj){
-    let genre = h('div');
+    let genre = h('div'),
+    b_img = './static/img/bg_med.png';
     if(obj.genres){
       for (let i = 0; i < 2; i++) {
         if(obj.genres[i]){
@@ -225,12 +226,12 @@ const tpl = {
       h('div.browse-movie-link',
         h('figure',
           h('img.img-fluid',{
-            src: obj.medium_cover_image,
+            src: obj.medium_cover_image || b_img,
             alt: obj.title,
             width: 210,
             height: 315,
             onerror: function(evt){
-              evt.target.src = './static/img/bg_med.png'
+              evt.target.src = b_img;
             }
           })
         ),
@@ -255,6 +256,7 @@ const tpl = {
   },
   item_sel: function(obj, sel){
     let genre = h('div'),
+    b_img = './static/img/bg_med.png',
     item;
     if(obj.genres){
       for (let i = 0; i < 2; i++) {
@@ -267,12 +269,12 @@ const tpl = {
       h('div.browse-movie-link',
         h('figure',
           h('img.img-fluid',{
-            src: obj.medium_cover_image,
+            src: obj.medium_cover_image || b_img,
             alt: obj.title,
             width: 210,
             height: 315,
             onerror: function(evt){
-              evt.target.src = './static/img/bg_med.png'
+              evt.target.src = b_img;
             }
           })
         ),
@@ -308,17 +310,18 @@ const tpl = {
     return item;
   },
   item_suggest: function(obj){
+    let b_img = './static/img/bg_med.png';
     return h('div.col-6.text-center',
       h('div.browse-movie-link.bc-hov.mb-4.cp',
         h('img.img-fluid',{
-          src: obj.medium_cover_image,
+          src: obj.medium_cover_image || b_img,
           alt: obj.title_long,
           title: obj.title_long,
           onclick: function(){
             location.hash = 'movie/'+ obj.id
           },
           onerror: function(evt){
-            evt.target.src = './static/img/bg_med.png'
+            evt.target.src = b_img;
           }
         })
       )
@@ -328,16 +331,17 @@ const tpl = {
     cl(obj)
     let lb_arr = [],
     rev_div = h('div'),
+    b_img = './static/img/bg_lg.png',
     sub_div = h('div.list-group'),
     tr_div = h('div.trailer-div.hidden.mt-4', tpl.yt_trailer(obj.yt_trailer_code));
 
     let item = h('div.row',
       h('div.col-sm-12.col-md-4.text-center',
         h('img.img-fluid', {
-          src: obj.large_cover_image,
+          src: obj.large_cover_image || b_img,
           alt: obj.title_long,
           onerror: function(evt){
-            evt.target.src = './static/img/bg_lg.png'
+            evt.target.src = b_img;
           }
         }),
         tr_div,
@@ -467,6 +471,7 @@ const tpl = {
         },
         h('hr.mb-4'),
         function(){
+          b_img = './static/img/bg_sm.png';
           let img_row = h('div.row');
           for (let i = 1; i < 4; i++) {
             if(obj['medium_screenshot_image'+ i]){
@@ -474,13 +479,13 @@ const tpl = {
               img_row.append(
                 h('div.col',
                   h('img.img-fluid.cp',{
-                    src: obj['medium_screenshot_image'+ i],
+                    src: obj['medium_screenshot_image'+ i] || b_img,
                     onclick: function(){
                       lightbox.open();
                       lightbox.currentSlide(i);
                     },
                     onerror: function(evt){
-                      evt.target.src = './static/img/bg_sm.png'
+                      evt.target.src = b_img;
                     }
                   })
                 )
@@ -511,39 +516,52 @@ const tpl = {
       )
     )
 
-    utils.fetch_subs('https://www.yifysubtitles.com/movie-imdb/'+ obj.imdb_code, function(err,res){
-      if(err){return cl(err)}
-      let items = new DOMParser(),
-      arr = [],
-      ttl;
+    if(config.settings.subtitles){
+      utils.fetch_subs('https://www.yifysubtitles.com/movie-imdb/'+ obj.imdb_code, function(err,res){
+        if(err){return cl(err)}
+        let items = new DOMParser(),
+        arr = [],
+        ttl;
+        try {
+          items = items.parseFromString(res, "text/html");
+          items = items.querySelector('.other-subs > tbody').children;
 
-      items = items.parseFromString(res, "text/html");
-      items = items.querySelector('.other-subs > tbody').children;
-      for (let i = 0; i < items.length; i++) {
-        if(items[i].getElementsByClassName('sub-lang')[0].innerText.toLowerCase() === config.settings.subtitle_lang){
-          ttl = items[i].children[2].firstChild.href.split('/').pop();
-          sub_div.append(tpl.sub_item({
-            lang: config.settings.subtitle_lang,
-            rating: items[i].firstChild.firstChild.innerText,
-            title: ttl,
-            link: config.sub_url + ttl + '.zip'
-          }))
+          for (let i = 0; i < items.length; i++) {
+            if(items[i].getElementsByClassName('sub-lang')[0].innerText.toLowerCase() === config.settings.subtitle_lang){
+              ttl = items[i].children[2].firstChild.href.split('/').pop();
+              sub_div.append(tpl.sub_item({
+                lang: config.settings.subtitle_lang,
+                rating: items[i].firstChild.firstChild.innerText,
+                title: ttl,
+                link: config.sub_url + ttl + '.zip'
+              }))
+            }
+
+          }
+          return rev_div.append(sub_div);
+        } catch (err) {
+          if(err){
+            rev_div.append(h('p','Subtitles not found for this movie'));
+          }
         }
 
-      }
-      rev_div.append(sub_div);
-    })
+      })
+    } else {
+      rev_div.append(h('p','Subtitles disabled'));
+    }
+
     lightbox.init(lb_arr);
 
     return item;
   },
   cast_ico: function(obj){
+    let b_img = './static/img/bg_thumb.png';
     return h('div.col-md-3.col-sm-6',
       h('div.media.border-success',
         h('img.rounded.mr-2.mb-2',{
-          src: obj.url_small_image,
+          src: obj.url_small_image || b_img,
           onerror: function(evt){
-            evt.target.src = './static/img/bg_thumb.png'
+            evt.target.src = b_img;
           }
         }),
         h('div.media-body',
@@ -558,11 +576,12 @@ const tpl = {
     )
   },
   quick_item: function(obj){
+    let b_img = './static/img/bg_xs.png';
     return h('div.media.qs_item.cp',
       h('img.rounded.mr-2',{
-        src: obj.small_cover_image,
+        src: obj.small_cover_image || b_img,
         onerror: function(evt){
-          evt.target.src = './static/img/bg_xs.png'
+          evt.target.src = b_img;
         }
       }),
       h('div.media-body',

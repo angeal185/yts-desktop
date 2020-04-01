@@ -9,9 +9,10 @@
       "light": "static/images/lg_400_l.svg",
       "dark": "static/images/lg_400.svg"
     },
+    "subtitles": true,
     "subtitle_lang": "english",
     "subtitle_items":[
-      "english"
+      "english", "albanian", "arabic", "bengali", "brazilian", "portuguese", "bulgarian", "chinese", "croatian", "czech", "danish" "dutch", "finnish", "french", "german", "greek", "hebrew", "hungarian", "indonesian", "italian", "japanese", "korean" "lithuanian", "macedonian", "malay", "norwegian", "polish", "portuguese", "romanian", "russian", "serbian", "slovenian" "spanish", "swedish", "thai", "turkish", "urdu", "vietnamese"
     ],
     "history_max": 50,
     "saved_max": 50,
