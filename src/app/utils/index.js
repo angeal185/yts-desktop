@@ -7,10 +7,10 @@ tpl = require('./tpl'),
 const utils = {
   pre: function(cb){
     try {
-      const sheet = new CSSStyleSheet();
+      let sheet = new CSSStyleSheet();
+      document.title = config.main_cnf.title;
       sheet.replaceSync(fs.readFileSync(base_dir +'/app/static/css/main.min.css', 'utf8'));
       document.adoptedStyleSheets = [sheet];
-      document.title = config.main_cnf.title;
       if(!ls.get('suggest')){
         ls.set('suggest', [])
       }
