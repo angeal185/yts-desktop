@@ -60,7 +60,7 @@ const tpl = {
       }, 250))
 
       item.append(
-        h('i.fa.fa-chevron-up')
+        h('i.icon-chevron-up')
       )
       return item;
   },
@@ -141,7 +141,7 @@ const tpl = {
     sb = h('div.sb-main.sb-left'),
     sb_lnk = h('div.sb-link',
       h('span'),
-      h('span.fa.fa-chevron-right.float-right.mt-1')
+      h('span.icon-chevron-right.float-right.mt-1')
     ),
     sb_item;
 
@@ -149,7 +149,7 @@ const tpl = {
       onclick: function(){
         sb.classList.toggle('sb-show');
       }
-    },h('div.sb-icon.fa.fa-bars')),
+    },h('div.sb-icon.icon-bars')),
     sb_body)
 
     for (let i = 0; i < config.sb_nav.items.length; i++) {
@@ -198,7 +198,7 @@ const tpl = {
       ),
       h('div.sub-content',
         h('div#myModal.lb-modal.hidden',
-          h('span.lb-close.fa.fa-window-close', {
+          h('span.lb-close.icon-times-circle', {
             onclick: function(){
               lightbox.close();
             }
@@ -236,7 +236,7 @@ const tpl = {
           })
         ),
         h('figcaption.hidden-xs.hidden-sm',
-          h('span.fa.fa-star'),
+          h('span.icon-star'),
           h('h4.rating', obj.rating +' / 10'),
           genre,
           h('button.btn.btn-outline-success', {
@@ -279,7 +279,7 @@ const tpl = {
           })
         ),
         h('figcaption.hidden-xs.hidden-sm',
-          h('span.fa.fa-star'),
+          h('span.icon-star'),
           h('h4.rating', obj.rating +' / 10'),
           genre,
           h('button.btn.btn-outline-success.flx-btn', {
@@ -351,7 +351,7 @@ const tpl = {
             tr_div.classList.remove('hidden');
             evt.target.remove();
           }
-        }, h('span.mr-2.fa.fa-play-circle'), 'Watch Trailer'),
+        }, h('span.mr-2.icon-play-circle'), 'Watch Trailer'),
         h('hr.mt-4'),
         h('h4.mb-4', 'Suggested movies'),
         function(){
@@ -369,7 +369,7 @@ const tpl = {
             onclick: function(){
               window.history.back()
             }
-          }, h('i.mr-2.fa.fa-chevron-left'), 'Back'),
+          }, h('i.mr-2.icon-chevron-left'), 'Back'),
           h('button.btn.btn-outline-success.float-right',{
             type: 'button',
             onclick: function(){
@@ -389,7 +389,7 @@ const tpl = {
               }
 
             }
-          }, h('i.mr-2.fa.fa-star'), 'Save')
+          }, h('i.mr-2.icon-star'), 'Save')
         ),
         h('h3', obj.title_long),
         function(){
@@ -410,28 +410,28 @@ const tpl = {
         h('h5.mb-4',
           h('span.mr-4', {
             title: 'like count'
-          }, h('i.fa.fa-heart.mr-2.mb-2.text-success'), obj.like_count),
+          }, h('i.icon-heart.mr-2.mb-2.text-success'), obj.like_count),
           h('span.mr-4', {
             title: 'imdb rating'
-          },h('i.fab.fa-imdb.mr-2.mb-2.text-success'), obj.rating),
+          },h('i.icon-imdb.mr-2.mb-2.text-success'), obj.rating),
           h('span.mr-4', {
             title: 'download count'
-          },h('i.fa.fa-download.mr-2.mb-2.text-success'), obj.download_count),
+          },h('i.icon-download.mr-2.mb-2.text-success'), obj.download_count),
           h('span.mr-4', {
             title: 'Runtime'
-          },h('i.fa.fa-clock.mr-2.mb-2.text-success'), obj.runtime +'min'),
+          },h('i.icon-clock.mr-2.mb-2.text-success'), obj.runtime +'min'),
           h('span.mr-4', {
             title: 'MPA rating'
-          },h('i.fa.fa-eye.mr-2.mb-2.text-success'), obj.mpa_rating),
+          },h('i.icon-eye.mr-2.mb-2.text-success'), obj.mpa_rating),
           h('span.mr-4', {
             title: 'upload date'
-          },h('i.fa.fa-cloud-upload-alt.mr-2.mb-2.text-success'), obj.date_uploaded.split(' ')[0]),
+          },h('i.icon-cloud-upload-alt.mr-2.mb-2.text-success'), obj.date_uploaded.split(' ')[0]),
           h('span.mr-4', {
             title: 'Language'
-          },h('i.fa.fa-language.mr-2.mb-2.text-success'), obj.language)
+          },h('i.icon-language.mr-2.mb-2.text-success'), obj.language)
         ),
         h('hr'),
-        h('h6.text-success.w-100.mt-2', h('span.fa.fa-cloud-download-alt.mr-2'),  'Torrent'),
+        h('h6.text-success.w-100.mt-2', h('span.icon-cloud-download-alt.mr-2'),  'Torrent'),
         function(){
           let lnks = h('div');
           for (let i = 0; i < obj.torrents.length; i++) {
@@ -447,7 +447,7 @@ const tpl = {
           }
           return lnks;
         },
-        h('h6.text-success.w-100.mt-2', h('span.fa.fa-magnet.mr-2'), 'Magnet'),
+        h('h6.text-success.w-100.mt-2', h('span.icon-magnet.mr-2'), 'Magnet'),
         function(){
           let lnks = h('div'),
           mag;
@@ -635,13 +635,13 @@ const tpl = {
   sub_item: function(obj){
     return h('div.list-group-item',
       h('div.row',
-        h('div.col-2', {title: 'rating'}, h('i.fa.fa-star.mr-2.text-success'), obj.rating),
-        h('div.col-2', {title: 'language'}, h('i.fa.fa-language.mr-2.text-success'),obj.lang),
+        h('div.col-2', {title: 'rating'}, h('i.icon-star.mr-2.text-success'), obj.rating),
+        h('div.col-2', {title: 'language'}, h('i.icon-language.mr-2.text-success'),obj.lang),
         h('div.col-6', {title: 'title'},h('p', obj.title)),
-        h('div.col-2', h('a', {
+        h('div.col-2.text-right', h('a.icon-cloud-download-alt', {
           href: obj.link,
           title: 'download subtitle'
-        }, 'download'))
+        }))
       )
     )
   }

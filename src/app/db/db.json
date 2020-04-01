@@ -1,6 +1,674 @@
 {
   "history": [
     {
+      "id": 8065,
+      "url": "https://yts.mx/movie/rampage-2018",
+      "imdb_code": "tt2231461",
+      "title": "Rampage",
+      "title_english": "Rampage",
+      "title_long": "Rampage (2018)",
+      "slug": "rampage-2018",
+      "year": 2018,
+      "rating": 6.1,
+      "runtime": 107,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Sci-Fi"
+      ],
+      "download_count": 5308459,
+      "like_count": 675,
+      "description_intro": "Athena-1, a space station owned by gene manipulation company Energyne, is destroyed after a laboratory rat mutates and wreaks havoc. Dr. Kerry Atkins, the lone surviving crew member, is ordered by CEO Claire Wyden to retrieve research canisters containing a pathogen. Atkins is able to flee in the escape pod when the station implodes, but due to damage from the rat it disintegrates upon re-entry, killing her. The falling pieces leave a trail of debris across the United States, including the Everglades in Florida, where a canister is consumed by an American crocodile, and a forest in Wyoming, where a gray wolf is exposed to the pathogen. Primatologist Davis Okoye, a former US Army Special Forces soldier and member of an anti-poaching unit, works at the San Diego Wildlife Sanctuary. He has befriended a rare albino western lowland gorilla named George, having saved him from poachers, and communicates with George using sign language and hand gestures. At night, one of the canisters ...",
+      "description_full": "Athena-1, a space station owned by gene manipulation company Energyne, is destroyed after a laboratory rat mutates and wreaks havoc. Dr. Kerry Atkins, the lone surviving crew member, is ordered by CEO Claire Wyden to retrieve research canisters containing a pathogen. Atkins is able to flee in the escape pod when the station implodes, but due to damage from the rat it disintegrates upon re-entry, killing her. The falling pieces leave a trail of debris across the United States, including the Everglades in Florida, where a canister is consumed by an American crocodile, and a forest in Wyoming, where a gray wolf is exposed to the pathogen. Primatologist Davis Okoye, a former US Army Special Forces soldier and member of an anti-poaching unit, works at the San Diego Wildlife Sanctuary. He has befriended a rare albino western lowland gorilla named George, having saved him from poachers, and communicates with George using sign language and hand gestures. At night, one of the canisters ...",
+      "yt_trailer_code": "coOKvrsmQiI",
+      "language": "English",
+      "mpa_rating": "PG-13",
+      "background_image": "https://yts.mx/assets/images/movies/rampage_2018/background.jpg",
+      "background_image_original": "https://yts.mx/assets/images/movies/rampage_2018/background.jpg",
+      "small_cover_image": "https://yts.mx/assets/images/movies/rampage_2018/small-cover.jpg",
+      "medium_cover_image": "https://yts.mx/assets/images/movies/rampage_2018/medium-cover.jpg",
+      "large_cover_image": "https://yts.mx/assets/images/movies/rampage_2018/large-cover.jpg",
+      "medium_screenshot_image1": "https://yts.mx/assets/images/movies/rampage_2018/medium-screenshot1.jpg",
+      "medium_screenshot_image2": "https://yts.mx/assets/images/movies/rampage_2018/medium-screenshot2.jpg",
+      "medium_screenshot_image3": "https://yts.mx/assets/images/movies/rampage_2018/medium-screenshot3.jpg",
+      "large_screenshot_image1": "https://yts.mx/assets/images/movies/rampage_2018/large-screenshot1.jpg",
+      "large_screenshot_image2": "https://yts.mx/assets/images/movies/rampage_2018/large-screenshot2.jpg",
+      "large_screenshot_image3": "https://yts.mx/assets/images/movies/rampage_2018/large-screenshot3.jpg",
+      "cast": [
+        {
+          "name": "Joe Manganiello",
+          "character_name": "Burke",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0542133.jpg",
+          "imdb_code": "0542133"
+        },
+        {
+          "name": "Jeffrey Dean Morgan",
+          "character_name": "Harvey Russell",
+          "imdb_code": "0604742"
+        },
+        {
+          "name": "Dwayne Johnson",
+          "character_name": "Davis Okoye",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0425005.jpg",
+          "imdb_code": "0425005"
+        },
+        {
+          "name": "Naomie Harris",
+          "character_name": "Dr. Kate Caldwell",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0365140.jpg",
+          "imdb_code": "0365140"
+        }
+      ],
+      "torrents": [
+        {
+          "url": "https://yts.mx/torrent/download/5C407A76B96EA7965BC559851B8D0B68B31504C7",
+          "hash": "5C407A76B96EA7965BC559851B8D0B68B31504C7",
+          "quality": "3D",
+          "type": "bluray",
+          "seeds": 43,
+          "peers": 9,
+          "size": "1.73 GB",
+          "size_bytes": 1857573356,
+          "date_uploaded": "2018-07-13 06:27:44",
+          "date_uploaded_unix": 1531456064
+        },
+        {
+          "url": "https://yts.mx/torrent/download/B4FBF3A9166081DA00D8A32300C46FC534DBA393",
+          "hash": "B4FBF3A9166081DA00D8A32300C46FC534DBA393",
+          "quality": "720p",
+          "type": "bluray",
+          "seeds": 355,
+          "peers": 61,
+          "size": "931.38 MB",
+          "size_bytes": 976622715,
+          "date_uploaded": "2018-07-01 16:22:08",
+          "date_uploaded_unix": 1530454928
+        },
+        {
+          "url": "https://yts.mx/torrent/download/04F561FCBC2CCC6FFB3853975D22CF3AE9C92AE5",
+          "hash": "04F561FCBC2CCC6FFB3853975D22CF3AE9C92AE5",
+          "quality": "1080p",
+          "type": "bluray",
+          "seeds": 504,
+          "peers": 75,
+          "size": "1.73 GB",
+          "size_bytes": 1857573356,
+          "date_uploaded": "2018-07-01 18:08:55",
+          "date_uploaded_unix": 1530461335
+        },
+        {
+          "url": "https://yts.mx/torrent/download/C5A9FE3FF9672B6FB1D19A978969374E98A1A7CB",
+          "hash": "C5A9FE3FF9672B6FB1D19A978969374E98A1A7CB",
+          "quality": "720p",
+          "type": "web",
+          "seeds": 307,
+          "peers": 31,
+          "size": "924.3 MB",
+          "size_bytes": 969198797,
+          "date_uploaded": "2018-06-18 15:13:20",
+          "date_uploaded_unix": 1529327600
+        },
+        {
+          "url": "https://yts.mx/torrent/download/5B0437A77F3F48F8E946EE70E0FA8361D3759BD5",
+          "hash": "5B0437A77F3F48F8E946EE70E0FA8361D3759BD5",
+          "quality": "1080p",
+          "type": "web",
+          "seeds": 166,
+          "peers": 43,
+          "size": "1.73 GB",
+          "size_bytes": 1857573356,
+          "date_uploaded": "2018-06-18 16:59:49",
+          "date_uploaded_unix": 1529333989
+        }
+      ],
+      "date_uploaded": "2018-06-18 15:13:20",
+      "date_uploaded_unix": 1529327600,
+      "suggestions": [
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/the_intern_2015/medium-cover.jpg",
+          "title_long": "The Intern (2015)",
+          "id": 4888
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/Before_Midnight_2013/medium-cover.jpg",
+          "title_long": "Before Midnight (2013)",
+          "id": 426
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/woman_in_gold_2015/medium-cover.jpg",
+          "title_long": "Woman in Gold (2015)",
+          "id": 4178
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/My_Soul_to_Take_2010/medium-cover.jpg",
+          "title_long": "My Soul to Take (2010)",
+          "id": 2137
+        }
+      ]
+    },
+    {
+      "id": 5385,
+      "url": "https://yts.mx/movie/the-revenant-2015",
+      "imdb_code": "tt1663202",
+      "title": "The Revenant",
+      "title_english": "The Revenant",
+      "title_long": "The Revenant (2015)",
+      "slug": "the-revenant-2015",
+      "year": 2015,
+      "rating": 8,
+      "runtime": 156,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Biography",
+        "Drama",
+        "History",
+        "Thriller",
+        "Western"
+      ],
+      "download_count": 4419091,
+      "like_count": 775,
+      "description_intro": "While exploring uncharted wilderness in 1823, legendary frontiersman Hugh Glass sustains injuries from a brutal bear attack. When his hunting team leaves him for dead, Glass must utilize his survival skills to find a way back home while avoiding natives on their own hunt. Grief-stricken and fueled by vengeance, Glass treks through the wintry terrain to track down John Fitzgerald, the former confidant who betrayed and abandoned him.",
+      "description_full": "While exploring uncharted wilderness in 1823, legendary frontiersman Hugh Glass sustains injuries from a brutal bear attack. When his hunting team leaves him for dead, Glass must utilize his survival skills to find a way back home while avoiding natives on their own hunt. Grief-stricken and fueled by vengeance, Glass treks through the wintry terrain to track down John Fitzgerald, the former confidant who betrayed and abandoned him.",
+      "yt_trailer_code": "QRfj1VCg16Y",
+      "language": "English",
+      "mpa_rating": "R",
+      "background_image": "https://yts.mx/assets/images/movies/the_revenant_2015/background.jpg",
+      "background_image_original": "https://yts.mx/assets/images/movies/the_revenant_2015/background.jpg",
+      "small_cover_image": "https://yts.mx/assets/images/movies/the_revenant_2015/small-cover.jpg",
+      "medium_cover_image": "https://yts.mx/assets/images/movies/the_revenant_2015/medium-cover.jpg",
+      "large_cover_image": "https://yts.mx/assets/images/movies/the_revenant_2015/large-cover.jpg",
+      "medium_screenshot_image1": "https://yts.mx/assets/images/movies/the_revenant_2015/medium-screenshot1.jpg",
+      "medium_screenshot_image2": "https://yts.mx/assets/images/movies/the_revenant_2015/medium-screenshot2.jpg",
+      "medium_screenshot_image3": "https://yts.mx/assets/images/movies/the_revenant_2015/medium-screenshot3.jpg",
+      "large_screenshot_image1": "https://yts.mx/assets/images/movies/the_revenant_2015/large-screenshot1.jpg",
+      "large_screenshot_image2": "https://yts.mx/assets/images/movies/the_revenant_2015/large-screenshot2.jpg",
+      "large_screenshot_image3": "https://yts.mx/assets/images/movies/the_revenant_2015/large-screenshot3.jpg",
+      "cast": [
+        {
+          "name": "Tom Hardy",
+          "character_name": "John Fitzgerald",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0362766.jpg",
+          "imdb_code": "0362766"
+        },
+        {
+          "name": "Leonardo DiCaprio",
+          "character_name": "Hugh Glass",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0000138.jpg",
+          "imdb_code": "0000138"
+        },
+        {
+          "name": "Domhnall Gleeson",
+          "character_name": "Captain Andrew Henry",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm1727304.jpg",
+          "imdb_code": "1727304"
+        },
+        {
+          "name": "Will Poulter",
+          "character_name": "Bridger",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm2401020.jpg",
+          "imdb_code": "2401020"
+        }
+      ],
+      "torrents": [
+        {
+          "url": "https://yts.mx/torrent/download/CBD21C97A839851A53CF1230E968FF373FE9A63E",
+          "hash": "CBD21C97A839851A53CF1230E968FF373FE9A63E",
+          "quality": "720p",
+          "type": "bluray",
+          "seeds": 253,
+          "peers": 49,
+          "size": "1.13 GB",
+          "size_bytes": 1213328261,
+          "date_uploaded": "2016-04-09 18:37:27",
+          "date_uploaded_unix": 1460219847
+        },
+        {
+          "url": "https://yts.mx/torrent/download/931A5BC5CE3767168D00F92A2E4CFFE472B9CE54",
+          "hash": "931A5BC5CE3767168D00F92A2E4CFFE472B9CE54",
+          "quality": "1080p",
+          "type": "bluray",
+          "seeds": 260,
+          "peers": 37,
+          "size": "2.39 GB",
+          "size_bytes": 2566242959,
+          "date_uploaded": "2016-04-09 23:01:30",
+          "date_uploaded_unix": 1460235690
+        }
+      ],
+      "date_uploaded": "2016-04-09 18:37:27",
+      "date_uploaded_unix": 1460219847,
+      "suggestions": [
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/Thor_The_Dark_World_2013/medium-cover.jpg",
+          "title_long": "Thor: The Dark World (2013)",
+          "id": 3874
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/Exam_2009/medium-cover.jpg",
+          "title_long": "Exam (2009)",
+          "id": 1099
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/Air_Force_One_1997/medium-cover.jpg",
+          "title_long": "Air Force One (1997)",
+          "id": 167
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/Humans_Versus_Zombies_2011/medium-cover.jpg",
+          "title_long": "Humans vs Zombies (2011)",
+          "id": 1545
+        }
+      ]
+    },
+    {
+      "id": 7025,
+      "url": "https://yts.mx/movie/thor-ragnarok-2017",
+      "imdb_code": "tt3501632",
+      "title": "Thor: Ragnarok",
+      "title_english": "Thor: Ragnarok",
+      "title_long": "Thor: Ragnarok (2017)",
+      "slug": "thor-ragnarok-2017",
+      "year": 2017,
+      "rating": 7.9,
+      "runtime": 130,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Fantasy",
+        "Sci-Fi"
+      ],
+      "download_count": 6084644,
+      "like_count": 1451,
+      "description_intro": "Thor (Chris Hemsworth) is imprisoned on the other side of the universe and finds himself in a race against time to get back to Asgard to stop Ragnarök, the destruction of his homeworld and the end of Asgardian civilization, at the hands of an all-powerful new threat, the ruthless Hela (Cate Blanchett).",
+      "description_full": "Thor (Chris Hemsworth) is imprisoned on the other side of the universe and finds himself in a race against time to get back to Asgard to stop Ragnarök, the destruction of his homeworld and the end of Asgardian civilization, at the hands of an all-powerful new threat, the ruthless Hela (Cate Blanchett).",
+      "yt_trailer_code": "v7MGUNV8MxU",
+      "language": "English",
+      "mpa_rating": "PG-13",
+      "background_image": "https://yts.mx/assets/images/movies/thor_ragnarok_2017/background.jpg",
+      "background_image_original": "https://yts.mx/assets/images/movies/thor_ragnarok_2017/background.jpg",
+      "small_cover_image": "https://yts.mx/assets/images/movies/thor_ragnarok_2017/small-cover.jpg",
+      "medium_cover_image": "https://yts.mx/assets/images/movies/thor_ragnarok_2017/medium-cover.jpg",
+      "large_cover_image": "https://yts.mx/assets/images/movies/thor_ragnarok_2017/large-cover.jpg",
+      "medium_screenshot_image1": "https://yts.mx/assets/images/movies/thor_ragnarok_2017/medium-screenshot1.jpg",
+      "medium_screenshot_image2": "https://yts.mx/assets/images/movies/thor_ragnarok_2017/medium-screenshot2.jpg",
+      "medium_screenshot_image3": "https://yts.mx/assets/images/movies/thor_ragnarok_2017/medium-screenshot3.jpg",
+      "large_screenshot_image1": "https://yts.mx/assets/images/movies/thor_ragnarok_2017/large-screenshot1.jpg",
+      "large_screenshot_image2": "https://yts.mx/assets/images/movies/thor_ragnarok_2017/large-screenshot2.jpg",
+      "large_screenshot_image3": "https://yts.mx/assets/images/movies/thor_ragnarok_2017/large-screenshot3.jpg",
+      "cast": [
+        {
+          "name": "Chris Hemsworth",
+          "character_name": "Thor",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm1165110.jpg",
+          "imdb_code": "1165110"
+        },
+        {
+          "name": "Tessa Thompson",
+          "character_name": "Valkyrie",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm1935086.jpg",
+          "imdb_code": "1935086"
+        },
+        {
+          "name": "Benedict Cumberbatch",
+          "character_name": "Doctor Strange",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm1212722.jpg",
+          "imdb_code": "1212722"
+        },
+        {
+          "name": "Cate Blanchett",
+          "character_name": "Hela",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0000949.jpg",
+          "imdb_code": "0000949"
+        }
+      ],
+      "torrents": [
+        {
+          "url": "https://yts.mx/torrent/download/F8717C4FD5234098ABE769DD45917F2945E4CB20",
+          "hash": "F8717C4FD5234098ABE769DD45917F2945E4CB20",
+          "quality": "3D",
+          "type": "bluray",
+          "seeds": 33,
+          "peers": 10,
+          "size": "2.19 GB",
+          "size_bytes": 2351494595,
+          "date_uploaded": "2018-02-28 19:14:29",
+          "date_uploaded_unix": 1519841669
+        },
+        {
+          "url": "https://yts.mx/torrent/download/06E3B0F724915F8D2FAC8A4C23C8C5E6AECDD107",
+          "hash": "06E3B0F724915F8D2FAC8A4C23C8C5E6AECDD107",
+          "quality": "720p",
+          "type": "bluray",
+          "seeds": 439,
+          "peers": 69,
+          "size": "1.04 GB",
+          "size_bytes": 1116691497,
+          "date_uploaded": "2018-02-17 16:02:31",
+          "date_uploaded_unix": 1518879751
+        },
+        {
+          "url": "https://yts.mx/torrent/download/E9D130CE07D0F1997CB4AE6F9EFF2A8CC07D0E97",
+          "hash": "E9D130CE07D0F1997CB4AE6F9EFF2A8CC07D0E97",
+          "quality": "1080p",
+          "type": "bluray",
+          "seeds": 483,
+          "peers": 54,
+          "size": "1.96 GB",
+          "size_bytes": 2104533975,
+          "date_uploaded": "2018-02-17 18:07:25",
+          "date_uploaded_unix": 1518887245
+        },
+        {
+          "url": "https://yts.mx/torrent/download/22E5CD13732B5F6A3B3732A7603B002EF9BA61F3",
+          "hash": "22E5CD13732B5F6A3B3732A7603B002EF9BA61F3",
+          "quality": "720p",
+          "type": "web",
+          "seeds": 204,
+          "peers": 36,
+          "size": "954.46 MB",
+          "size_bytes": 1000823849,
+          "date_uploaded": "2018-01-23 18:04:03",
+          "date_uploaded_unix": 1516727043
+        },
+        {
+          "url": "https://yts.mx/torrent/download/2037B2296417B5D6D3B89DC7A288255943406CF7",
+          "hash": "2037B2296417B5D6D3B89DC7A288255943406CF7",
+          "quality": "1080p",
+          "type": "web",
+          "seeds": 321,
+          "peers": 97,
+          "size": "1.98 GB",
+          "size_bytes": 2126008812,
+          "date_uploaded": "2018-01-23 20:19:37",
+          "date_uploaded_unix": 1516735177
+        }
+      ],
+      "date_uploaded": "2018-01-23 18:04:03",
+      "date_uploaded_unix": 1516727043,
+      "suggestions": [
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/sacrifice_2011/medium-cover.jpg",
+          "title_long": "Sacrifice (2011)",
+          "id": 8979
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/entourage_2015/medium-cover.jpg",
+          "title_long": "Entourage (2015)",
+          "id": 4521
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/black_water_2018/medium-cover.jpg",
+          "title_long": "Black Water (2018)",
+          "id": 7864
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/Magnificent_Obsession_1954/medium-cover.jpg",
+          "title_long": "Magnificent Obsession (1954)",
+          "id": 1961
+        }
+      ]
+    },
+    {
+      "id": 7709,
+      "url": "https://yts.mx/movie/black-panther-2018",
+      "imdb_code": "tt1825683",
+      "title": "Black Panther",
+      "title_english": "Black Panther",
+      "title_long": "Black Panther (2018)",
+      "slug": "black-panther-2018",
+      "year": 2018,
+      "rating": 7.3,
+      "runtime": 134,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Sci-Fi"
+      ],
+      "download_count": 6780534,
+      "like_count": 1267,
+      "description_intro": "After the events of Captain America: Civil War, Prince T'Challa returns home to the reclusive, technologically advanced African nation of Wakanda to serve as his country's new king. However, T'Challa soon finds that he is challenged for the throne from factions within his own country. When two foes conspire to destroy Wakanda, the hero known as Black Panther must team up with C.I.A. agent Everett K. Ross and members of the Dora Milaje, Wakandan special forces, to prevent Wakanda from being dragged into a world war.",
+      "description_full": "After the events of Captain America: Civil War, Prince T'Challa returns home to the reclusive, technologically advanced African nation of Wakanda to serve as his country's new king. However, T'Challa soon finds that he is challenged for the throne from factions within his own country. When two foes conspire to destroy Wakanda, the hero known as Black Panther must team up with C.I.A. agent Everett K. Ross and members of the Dora Milaje, Wakandan special forces, to prevent Wakanda from being dragged into a world war.",
+      "yt_trailer_code": "dxWvtMOGAhw",
+      "language": "English",
+      "mpa_rating": "PG-13",
+      "background_image": "https://yts.mx/assets/images/movies/black_panther_2018/background.jpg",
+      "background_image_original": "https://yts.mx/assets/images/movies/black_panther_2018/background.jpg",
+      "small_cover_image": "https://yts.mx/assets/images/movies/black_panther_2018/small-cover.jpg",
+      "medium_cover_image": "https://yts.mx/assets/images/movies/black_panther_2018/medium-cover.jpg",
+      "large_cover_image": "https://yts.mx/assets/images/movies/black_panther_2018/large-cover.jpg",
+      "medium_screenshot_image1": "https://yts.mx/assets/images/movies/black_panther_2018/medium-screenshot1.jpg",
+      "medium_screenshot_image2": "https://yts.mx/assets/images/movies/black_panther_2018/medium-screenshot2.jpg",
+      "medium_screenshot_image3": "https://yts.mx/assets/images/movies/black_panther_2018/medium-screenshot3.jpg",
+      "large_screenshot_image1": "https://yts.mx/assets/images/movies/black_panther_2018/large-screenshot1.jpg",
+      "large_screenshot_image2": "https://yts.mx/assets/images/movies/black_panther_2018/large-screenshot2.jpg",
+      "large_screenshot_image3": "https://yts.mx/assets/images/movies/black_panther_2018/large-screenshot3.jpg",
+      "cast": [
+        {
+          "name": "Michael B. Jordan",
+          "character_name": "Erik Killmonger",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0430107.jpg",
+          "imdb_code": "0430107"
+        },
+        {
+          "name": "Sebastian Stan",
+          "character_name": "Bucky Barnes",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm1659221.jpg",
+          "imdb_code": "1659221"
+        },
+        {
+          "name": "Chadwick Boseman",
+          "character_name": "",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm1569276.jpg",
+          "imdb_code": "1569276"
+        },
+        {
+          "name": "Danai Gurira",
+          "character_name": "Okoye",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm1775091.jpg",
+          "imdb_code": "1775091"
+        }
+      ],
+      "torrents": [
+        {
+          "url": "https://yts.mx/torrent/download/9588EA0C877B8477400E81DBFEF899D139461F57",
+          "hash": "9588EA0C877B8477400E81DBFEF899D139461F57",
+          "quality": "3D",
+          "type": "bluray",
+          "seeds": 47,
+          "peers": 21,
+          "size": "2.16 GB",
+          "size_bytes": 2319282340,
+          "date_uploaded": "2018-05-28 11:28:32",
+          "date_uploaded_unix": 1527499712
+        },
+        {
+          "url": "https://yts.mx/torrent/download/584CB082CB19D81DBABE3E201D89976459D495EA",
+          "hash": "584CB082CB19D81DBABE3E201D89976459D495EA",
+          "quality": "720p",
+          "type": "bluray",
+          "seeds": 994,
+          "peers": 189,
+          "size": "1.13 GB",
+          "size_bytes": 1213328261,
+          "date_uploaded": "2018-05-02 04:38:17",
+          "date_uploaded_unix": 1525228697
+        },
+        {
+          "url": "https://yts.mx/torrent/download/E156CE70FEE6464549FEF653C8468AECB3E7E9F1",
+          "hash": "E156CE70FEE6464549FEF653C8468AECB3E7E9F1",
+          "quality": "1080p",
+          "type": "bluray",
+          "seeds": 1593,
+          "peers": 311,
+          "size": "2.17 GB",
+          "size_bytes": 2330019758,
+          "date_uploaded": "2018-05-02 07:08:38",
+          "date_uploaded_unix": 1525237718
+        }
+      ],
+      "date_uploaded": "2018-05-02 04:38:17",
+      "date_uploaded_unix": 1525228697,
+      "suggestions": [
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/Takers_2010/medium-cover.jpg",
+          "title_long": "Takers (2010)",
+          "id": 2972
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/Star_Trek_First_Contact_1996/medium-cover.jpg",
+          "title_long": "Star Trek: First Contact (1996)",
+          "id": 2847
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/handsome_siblings_1992/medium-cover.jpg",
+          "title_long": "Handsome Siblings (1992)",
+          "id": 13889
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/Dear_John_2010/medium-cover.jpg",
+          "title_long": "Dear John (2010)",
+          "id": 869
+        }
+      ]
+    },
+    {
+      "id": 8539,
+      "url": "https://yts.mx/movie/deadpool-2-2018",
+      "imdb_code": "tt5463162",
+      "title": "Deadpool 2",
+      "title_english": "Deadpool 2",
+      "title_long": "Deadpool 2 (2018)",
+      "slug": "deadpool-2-2018",
+      "year": 2018,
+      "rating": 7.7,
+      "runtime": 119,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Sci-Fi"
+      ],
+      "download_count": 6629236,
+      "like_count": 1048,
+      "description_intro": "After losing Vanessa (Morena Baccarin), the love of his life, 4th-wall breaking mercenary Wade Wilson aka Deadpool (Ryan Reynolds) must assemble a team and protect a young, full-figured mutant Russell Collins aka Firefist (Julian Dennison) from Cable (Josh Brolin), a no-nonsense, dangerous cyborg from the future, and must also learn the most important lesson of all: to be part of a family again.",
+      "description_full": "After losing Vanessa (Morena Baccarin), the love of his life, 4th-wall breaking mercenary Wade Wilson aka Deadpool (Ryan Reynolds) must assemble a team and protect a young, full-figured mutant Russell Collins aka Firefist (Julian Dennison) from Cable (Josh Brolin), a no-nonsense, dangerous cyborg from the future, and must also learn the most important lesson of all: to be part of a family again.",
+      "yt_trailer_code": "Z5ezsReZcxU",
+      "language": "English",
+      "mpa_rating": "R",
+      "background_image": "https://yts.mx/assets/images/movies/deadpool_2_2018/background.jpg",
+      "background_image_original": "https://yts.mx/assets/images/movies/deadpool_2_2018/background.jpg",
+      "small_cover_image": "https://yts.mx/assets/images/movies/deadpool_2_2018/small-cover.jpg",
+      "medium_cover_image": "https://yts.mx/assets/images/movies/deadpool_2_2018/medium-cover.jpg",
+      "large_cover_image": "https://yts.mx/assets/images/movies/deadpool_2_2018/large-cover.jpg",
+      "medium_screenshot_image1": "https://yts.mx/assets/images/movies/deadpool_2_2018/medium-screenshot1.jpg",
+      "medium_screenshot_image2": "https://yts.mx/assets/images/movies/deadpool_2_2018/medium-screenshot2.jpg",
+      "medium_screenshot_image3": "https://yts.mx/assets/images/movies/deadpool_2_2018/medium-screenshot3.jpg",
+      "large_screenshot_image1": "https://yts.mx/assets/images/movies/deadpool_2_2018/large-screenshot1.jpg",
+      "large_screenshot_image2": "https://yts.mx/assets/images/movies/deadpool_2_2018/large-screenshot2.jpg",
+      "large_screenshot_image3": "https://yts.mx/assets/images/movies/deadpool_2_2018/large-screenshot3.jpg",
+      "cast": [
+        {
+          "name": "Brad Pitt",
+          "character_name": "Vanisher",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0000093.jpg",
+          "imdb_code": "0000093"
+        },
+        {
+          "name": "Morena Baccarin",
+          "character_name": "Vanessa",
+          "imdb_code": "1072555"
+        },
+        {
+          "name": "Evan Peters",
+          "character_name": "Quicksilver",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm1404239.jpg",
+          "imdb_code": "1404239"
+        },
+        {
+          "name": "James McAvoy",
+          "character_name": "Charles Xavier",
+          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0564215.jpg",
+          "imdb_code": "0564215"
+        }
+      ],
+      "torrents": [
+        {
+          "url": "https://yts.mx/torrent/download/18F05A35A335909B384D1D40D79EFEC3E71BCEE0",
+          "hash": "18F05A35A335909B384D1D40D79EFEC3E71BCEE0",
+          "quality": "720p",
+          "type": "bluray",
+          "seeds": 818,
+          "peers": 88,
+          "size": "1.11 GB",
+          "size_bytes": 1191853425,
+          "date_uploaded": "2018-08-08 21:58:54",
+          "date_uploaded_unix": 1533758334
+        },
+        {
+          "url": "https://yts.mx/torrent/download/E774B886539A3F7EBF1FFE7CD01A107F73298248",
+          "hash": "E774B886539A3F7EBF1FFE7CD01A107F73298248",
+          "quality": "1080p",
+          "type": "bluray",
+          "seeds": 1322,
+          "peers": 202,
+          "size": "2.14 GB",
+          "size_bytes": 2297807503,
+          "date_uploaded": "2018-08-09 00:07:16",
+          "date_uploaded_unix": 1533766036
+        },
+        {
+          "url": "https://yts.mx/torrent/download/00102086B401F8CE049BE55410FF9C69D87BB740",
+          "hash": "00102086B401F8CE049BE55410FF9C69D87BB740",
+          "quality": "720p",
+          "type": "web",
+          "seeds": 244,
+          "peers": 66,
+          "size": "1.1 GB",
+          "size_bytes": 1181116006,
+          "date_uploaded": "2018-08-08 06:59:47",
+          "date_uploaded_unix": 1533704387
+        },
+        {
+          "url": "https://yts.mx/torrent/download/C9BDA0A39398777B146D92C8421C48BA2ED9AEF5",
+          "hash": "C9BDA0A39398777B146D92C8421C48BA2ED9AEF5",
+          "quality": "1080p",
+          "type": "web",
+          "seeds": 341,
+          "peers": 53,
+          "size": "2.13 GB",
+          "size_bytes": 2287070085,
+          "date_uploaded": "2018-08-08 15:46:28",
+          "date_uploaded_unix": 1533735988
+        }
+      ],
+      "date_uploaded": "2018-08-08 06:59:47",
+      "date_uploaded_unix": 1533704387,
+      "suggestions": [
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/the_stranger_2014/medium-cover.jpg",
+          "title_long": "The Stranger (2014)",
+          "id": 4474
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/non_stop_1996/medium-cover.jpg",
+          "title_long": "Non-Stop (1996)",
+          "id": 9928
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/A_Most_Wanted_Man_2014/medium-cover.jpg",
+          "title_long": "A Most Wanted Man (2014)",
+          "id": 107
+        },
+        {
+          "medium_cover_image": "https://yts.mx/assets/images/movies/the_dream_is_alive_1985/medium-cover.jpg",
+          "title_long": "The Dream Is Alive (1985)",
+          "id": 9791
+        }
+      ]
+    },
+    {
       "id": 15338,
       "url": "https://yts.mx/movie/alien-outbreak-2020",
       "imdb_code": "tt6409856",
@@ -583,152 +1251,6 @@
       ]
     },
     {
-      "id": 8065,
-      "url": "https://yts.mx/movie/rampage-2018",
-      "imdb_code": "tt2231461",
-      "title": "Rampage",
-      "title_english": "Rampage",
-      "title_long": "Rampage (2018)",
-      "slug": "rampage-2018",
-      "year": 2018,
-      "rating": 6.1,
-      "runtime": 107,
-      "genres": [
-        "Action",
-        "Adventure",
-        "Sci-Fi"
-      ],
-      "download_count": 5308459,
-      "like_count": 675,
-      "description_intro": "Athena-1, a space station owned by gene manipulation company Energyne, is destroyed after a laboratory rat mutates and wreaks havoc. Dr. Kerry Atkins, the lone surviving crew member, is ordered by CEO Claire Wyden to retrieve research canisters containing a pathogen. Atkins is able to flee in the escape pod when the station implodes, but due to damage from the rat it disintegrates upon re-entry, killing her. The falling pieces leave a trail of debris across the United States, including the Everglades in Florida, where a canister is consumed by an American crocodile, and a forest in Wyoming, where a gray wolf is exposed to the pathogen. Primatologist Davis Okoye, a former US Army Special Forces soldier and member of an anti-poaching unit, works at the San Diego Wildlife Sanctuary. He has befriended a rare albino western lowland gorilla named George, having saved him from poachers, and communicates with George using sign language and hand gestures. At night, one of the canisters ...",
-      "description_full": "Athena-1, a space station owned by gene manipulation company Energyne, is destroyed after a laboratory rat mutates and wreaks havoc. Dr. Kerry Atkins, the lone surviving crew member, is ordered by CEO Claire Wyden to retrieve research canisters containing a pathogen. Atkins is able to flee in the escape pod when the station implodes, but due to damage from the rat it disintegrates upon re-entry, killing her. The falling pieces leave a trail of debris across the United States, including the Everglades in Florida, where a canister is consumed by an American crocodile, and a forest in Wyoming, where a gray wolf is exposed to the pathogen. Primatologist Davis Okoye, a former US Army Special Forces soldier and member of an anti-poaching unit, works at the San Diego Wildlife Sanctuary. He has befriended a rare albino western lowland gorilla named George, having saved him from poachers, and communicates with George using sign language and hand gestures. At night, one of the canisters ...",
-      "yt_trailer_code": "coOKvrsmQiI",
-      "language": "English",
-      "mpa_rating": "PG-13",
-      "background_image": "https://yts.mx/assets/images/movies/rampage_2018/background.jpg",
-      "background_image_original": "https://yts.mx/assets/images/movies/rampage_2018/background.jpg",
-      "small_cover_image": "https://yts.mx/assets/images/movies/rampage_2018/small-cover.jpg",
-      "medium_cover_image": "https://yts.mx/assets/images/movies/rampage_2018/medium-cover.jpg",
-      "large_cover_image": "https://yts.mx/assets/images/movies/rampage_2018/large-cover.jpg",
-      "medium_screenshot_image1": "https://yts.mx/assets/images/movies/rampage_2018/medium-screenshot1.jpg",
-      "medium_screenshot_image2": "https://yts.mx/assets/images/movies/rampage_2018/medium-screenshot2.jpg",
-      "medium_screenshot_image3": "https://yts.mx/assets/images/movies/rampage_2018/medium-screenshot3.jpg",
-      "large_screenshot_image1": "https://yts.mx/assets/images/movies/rampage_2018/large-screenshot1.jpg",
-      "large_screenshot_image2": "https://yts.mx/assets/images/movies/rampage_2018/large-screenshot2.jpg",
-      "large_screenshot_image3": "https://yts.mx/assets/images/movies/rampage_2018/large-screenshot3.jpg",
-      "cast": [
-        {
-          "name": "Joe Manganiello",
-          "character_name": "Burke",
-          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0542133.jpg",
-          "imdb_code": "0542133"
-        },
-        {
-          "name": "Jeffrey Dean Morgan",
-          "character_name": "Harvey Russell",
-          "imdb_code": "0604742"
-        },
-        {
-          "name": "Dwayne Johnson",
-          "character_name": "Davis Okoye",
-          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0425005.jpg",
-          "imdb_code": "0425005"
-        },
-        {
-          "name": "Naomie Harris",
-          "character_name": "Dr. Kate Caldwell",
-          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0365140.jpg",
-          "imdb_code": "0365140"
-        }
-      ],
-      "torrents": [
-        {
-          "url": "https://yts.mx/torrent/download/5C407A76B96EA7965BC559851B8D0B68B31504C7",
-          "hash": "5C407A76B96EA7965BC559851B8D0B68B31504C7",
-          "quality": "3D",
-          "type": "bluray",
-          "seeds": 43,
-          "peers": 9,
-          "size": "1.73 GB",
-          "size_bytes": 1857573356,
-          "date_uploaded": "2018-07-13 06:27:44",
-          "date_uploaded_unix": 1531456064
-        },
-        {
-          "url": "https://yts.mx/torrent/download/B4FBF3A9166081DA00D8A32300C46FC534DBA393",
-          "hash": "B4FBF3A9166081DA00D8A32300C46FC534DBA393",
-          "quality": "720p",
-          "type": "bluray",
-          "seeds": 355,
-          "peers": 61,
-          "size": "931.38 MB",
-          "size_bytes": 976622715,
-          "date_uploaded": "2018-07-01 16:22:08",
-          "date_uploaded_unix": 1530454928
-        },
-        {
-          "url": "https://yts.mx/torrent/download/04F561FCBC2CCC6FFB3853975D22CF3AE9C92AE5",
-          "hash": "04F561FCBC2CCC6FFB3853975D22CF3AE9C92AE5",
-          "quality": "1080p",
-          "type": "bluray",
-          "seeds": 504,
-          "peers": 75,
-          "size": "1.73 GB",
-          "size_bytes": 1857573356,
-          "date_uploaded": "2018-07-01 18:08:55",
-          "date_uploaded_unix": 1530461335
-        },
-        {
-          "url": "https://yts.mx/torrent/download/C5A9FE3FF9672B6FB1D19A978969374E98A1A7CB",
-          "hash": "C5A9FE3FF9672B6FB1D19A978969374E98A1A7CB",
-          "quality": "720p",
-          "type": "web",
-          "seeds": 307,
-          "peers": 31,
-          "size": "924.3 MB",
-          "size_bytes": 969198797,
-          "date_uploaded": "2018-06-18 15:13:20",
-          "date_uploaded_unix": 1529327600
-        },
-        {
-          "url": "https://yts.mx/torrent/download/5B0437A77F3F48F8E946EE70E0FA8361D3759BD5",
-          "hash": "5B0437A77F3F48F8E946EE70E0FA8361D3759BD5",
-          "quality": "1080p",
-          "type": "web",
-          "seeds": 166,
-          "peers": 43,
-          "size": "1.73 GB",
-          "size_bytes": 1857573356,
-          "date_uploaded": "2018-06-18 16:59:49",
-          "date_uploaded_unix": 1529333989
-        }
-      ],
-      "date_uploaded": "2018-06-18 15:13:20",
-      "date_uploaded_unix": 1529327600,
-      "suggestions": [
-        {
-          "medium_cover_image": "https://yts.mx/assets/images/movies/the_intern_2015/medium-cover.jpg",
-          "title_long": "The Intern (2015)",
-          "id": 4888
-        },
-        {
-          "medium_cover_image": "https://yts.mx/assets/images/movies/Before_Midnight_2013/medium-cover.jpg",
-          "title_long": "Before Midnight (2013)",
-          "id": 426
-        },
-        {
-          "medium_cover_image": "https://yts.mx/assets/images/movies/woman_in_gold_2015/medium-cover.jpg",
-          "title_long": "Woman in Gold (2015)",
-          "id": 4178
-        },
-        {
-          "medium_cover_image": "https://yts.mx/assets/images/movies/My_Soul_to_Take_2010/medium-cover.jpg",
-          "title_long": "My Soul to Take (2010)",
-          "id": 2137
-        }
-      ]
-    },
-    {
       "id": 2847,
       "url": "https://yts.mx/movie/star-trek-first-contact-1996",
       "imdb_code": "tt0117731",
@@ -842,141 +1364,6 @@
       ]
     },
     {
-      "id": 8539,
-      "url": "https://yts.mx/movie/deadpool-2-2018",
-      "imdb_code": "tt5463162",
-      "title": "Deadpool 2",
-      "title_english": "Deadpool 2",
-      "title_long": "Deadpool 2 (2018)",
-      "slug": "deadpool-2-2018",
-      "year": 2018,
-      "rating": 7.7,
-      "runtime": 119,
-      "genres": [
-        "Action",
-        "Adventure",
-        "Comedy",
-        "Sci-Fi"
-      ],
-      "download_count": 6629236,
-      "like_count": 1048,
-      "description_intro": "After losing Vanessa (Morena Baccarin), the love of his life, 4th-wall breaking mercenary Wade Wilson aka Deadpool (Ryan Reynolds) must assemble a team and protect a young, full-figured mutant Russell Collins aka Firefist (Julian Dennison) from Cable (Josh Brolin), a no-nonsense, dangerous cyborg from the future, and must also learn the most important lesson of all: to be part of a family again.",
-      "description_full": "After losing Vanessa (Morena Baccarin), the love of his life, 4th-wall breaking mercenary Wade Wilson aka Deadpool (Ryan Reynolds) must assemble a team and protect a young, full-figured mutant Russell Collins aka Firefist (Julian Dennison) from Cable (Josh Brolin), a no-nonsense, dangerous cyborg from the future, and must also learn the most important lesson of all: to be part of a family again.",
-      "yt_trailer_code": "Z5ezsReZcxU",
-      "language": "English",
-      "mpa_rating": "R",
-      "background_image": "https://yts.mx/assets/images/movies/deadpool_2_2018/background.jpg",
-      "background_image_original": "https://yts.mx/assets/images/movies/deadpool_2_2018/background.jpg",
-      "small_cover_image": "https://yts.mx/assets/images/movies/deadpool_2_2018/small-cover.jpg",
-      "medium_cover_image": "https://yts.mx/assets/images/movies/deadpool_2_2018/medium-cover.jpg",
-      "large_cover_image": "https://yts.mx/assets/images/movies/deadpool_2_2018/large-cover.jpg",
-      "medium_screenshot_image1": "https://yts.mx/assets/images/movies/deadpool_2_2018/medium-screenshot1.jpg",
-      "medium_screenshot_image2": "https://yts.mx/assets/images/movies/deadpool_2_2018/medium-screenshot2.jpg",
-      "medium_screenshot_image3": "https://yts.mx/assets/images/movies/deadpool_2_2018/medium-screenshot3.jpg",
-      "large_screenshot_image1": "https://yts.mx/assets/images/movies/deadpool_2_2018/large-screenshot1.jpg",
-      "large_screenshot_image2": "https://yts.mx/assets/images/movies/deadpool_2_2018/large-screenshot2.jpg",
-      "large_screenshot_image3": "https://yts.mx/assets/images/movies/deadpool_2_2018/large-screenshot3.jpg",
-      "cast": [
-        {
-          "name": "Brad Pitt",
-          "character_name": "Vanisher",
-          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0000093.jpg",
-          "imdb_code": "0000093"
-        },
-        {
-          "name": "Morena Baccarin",
-          "character_name": "Vanessa",
-          "imdb_code": "1072555"
-        },
-        {
-          "name": "Evan Peters",
-          "character_name": "Quicksilver",
-          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm1404239.jpg",
-          "imdb_code": "1404239"
-        },
-        {
-          "name": "James McAvoy",
-          "character_name": "Charles Xavier",
-          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0564215.jpg",
-          "imdb_code": "0564215"
-        }
-      ],
-      "torrents": [
-        {
-          "url": "https://yts.mx/torrent/download/18F05A35A335909B384D1D40D79EFEC3E71BCEE0",
-          "hash": "18F05A35A335909B384D1D40D79EFEC3E71BCEE0",
-          "quality": "720p",
-          "type": "bluray",
-          "seeds": 818,
-          "peers": 88,
-          "size": "1.11 GB",
-          "size_bytes": 1191853425,
-          "date_uploaded": "2018-08-08 21:58:54",
-          "date_uploaded_unix": 1533758334
-        },
-        {
-          "url": "https://yts.mx/torrent/download/E774B886539A3F7EBF1FFE7CD01A107F73298248",
-          "hash": "E774B886539A3F7EBF1FFE7CD01A107F73298248",
-          "quality": "1080p",
-          "type": "bluray",
-          "seeds": 1322,
-          "peers": 202,
-          "size": "2.14 GB",
-          "size_bytes": 2297807503,
-          "date_uploaded": "2018-08-09 00:07:16",
-          "date_uploaded_unix": 1533766036
-        },
-        {
-          "url": "https://yts.mx/torrent/download/00102086B401F8CE049BE55410FF9C69D87BB740",
-          "hash": "00102086B401F8CE049BE55410FF9C69D87BB740",
-          "quality": "720p",
-          "type": "web",
-          "seeds": 244,
-          "peers": 66,
-          "size": "1.1 GB",
-          "size_bytes": 1181116006,
-          "date_uploaded": "2018-08-08 06:59:47",
-          "date_uploaded_unix": 1533704387
-        },
-        {
-          "url": "https://yts.mx/torrent/download/C9BDA0A39398777B146D92C8421C48BA2ED9AEF5",
-          "hash": "C9BDA0A39398777B146D92C8421C48BA2ED9AEF5",
-          "quality": "1080p",
-          "type": "web",
-          "seeds": 341,
-          "peers": 53,
-          "size": "2.13 GB",
-          "size_bytes": 2287070085,
-          "date_uploaded": "2018-08-08 15:46:28",
-          "date_uploaded_unix": 1533735988
-        }
-      ],
-      "date_uploaded": "2018-08-08 06:59:47",
-      "date_uploaded_unix": 1533704387,
-      "suggestions": [
-        {
-          "medium_cover_image": "https://yts.mx/assets/images/movies/the_stranger_2014/medium-cover.jpg",
-          "title_long": "The Stranger (2014)",
-          "id": 4474
-        },
-        {
-          "medium_cover_image": "https://yts.mx/assets/images/movies/non_stop_1996/medium-cover.jpg",
-          "title_long": "Non-Stop (1996)",
-          "id": 9928
-        },
-        {
-          "medium_cover_image": "https://yts.mx/assets/images/movies/A_Most_Wanted_Man_2014/medium-cover.jpg",
-          "title_long": "A Most Wanted Man (2014)",
-          "id": 107
-        },
-        {
-          "medium_cover_image": "https://yts.mx/assets/images/movies/the_dream_is_alive_1985/medium-cover.jpg",
-          "title_long": "The Dream Is Alive (1985)",
-          "id": 9791
-        }
-      ]
-    },
-    {
       "id": 129,
       "url": "https://yts.mx/movie/abduction-2011",
       "imdb_code": "tt1600195",
@@ -1084,129 +1471,6 @@
           "medium_cover_image": "https://yts.mx/assets/images/movies/Gullivers_Travels_1939/medium-cover.jpg",
           "title_long": "Gulliver's Travels (1939)",
           "id": 1374
-        }
-      ]
-    },
-    {
-      "id": 7709,
-      "url": "https://yts.mx/movie/black-panther-2018",
-      "imdb_code": "tt1825683",
-      "title": "Black Panther",
-      "title_english": "Black Panther",
-      "title_long": "Black Panther (2018)",
-      "slug": "black-panther-2018",
-      "year": 2018,
-      "rating": 7.3,
-      "runtime": 134,
-      "genres": [
-        "Action",
-        "Adventure",
-        "Sci-Fi"
-      ],
-      "download_count": 6780534,
-      "like_count": 1267,
-      "description_intro": "After the events of Captain America: Civil War, Prince T'Challa returns home to the reclusive, technologically advanced African nation of Wakanda to serve as his country's new king. However, T'Challa soon finds that he is challenged for the throne from factions within his own country. When two foes conspire to destroy Wakanda, the hero known as Black Panther must team up with C.I.A. agent Everett K. Ross and members of the Dora Milaje, Wakandan special forces, to prevent Wakanda from being dragged into a world war.",
-      "description_full": "After the events of Captain America: Civil War, Prince T'Challa returns home to the reclusive, technologically advanced African nation of Wakanda to serve as his country's new king. However, T'Challa soon finds that he is challenged for the throne from factions within his own country. When two foes conspire to destroy Wakanda, the hero known as Black Panther must team up with C.I.A. agent Everett K. Ross and members of the Dora Milaje, Wakandan special forces, to prevent Wakanda from being dragged into a world war.",
-      "yt_trailer_code": "dxWvtMOGAhw",
-      "language": "English",
-      "mpa_rating": "PG-13",
-      "background_image": "https://yts.mx/assets/images/movies/black_panther_2018/background.jpg",
-      "background_image_original": "https://yts.mx/assets/images/movies/black_panther_2018/background.jpg",
-      "small_cover_image": "https://yts.mx/assets/images/movies/black_panther_2018/small-cover.jpg",
-      "medium_cover_image": "https://yts.mx/assets/images/movies/black_panther_2018/medium-cover.jpg",
-      "large_cover_image": "https://yts.mx/assets/images/movies/black_panther_2018/large-cover.jpg",
-      "medium_screenshot_image1": "https://yts.mx/assets/images/movies/black_panther_2018/medium-screenshot1.jpg",
-      "medium_screenshot_image2": "https://yts.mx/assets/images/movies/black_panther_2018/medium-screenshot2.jpg",
-      "medium_screenshot_image3": "https://yts.mx/assets/images/movies/black_panther_2018/medium-screenshot3.jpg",
-      "large_screenshot_image1": "https://yts.mx/assets/images/movies/black_panther_2018/large-screenshot1.jpg",
-      "large_screenshot_image2": "https://yts.mx/assets/images/movies/black_panther_2018/large-screenshot2.jpg",
-      "large_screenshot_image3": "https://yts.mx/assets/images/movies/black_panther_2018/large-screenshot3.jpg",
-      "cast": [
-        {
-          "name": "Michael B. Jordan",
-          "character_name": "Erik Killmonger",
-          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm0430107.jpg",
-          "imdb_code": "0430107"
-        },
-        {
-          "name": "Sebastian Stan",
-          "character_name": "Bucky Barnes",
-          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm1659221.jpg",
-          "imdb_code": "1659221"
-        },
-        {
-          "name": "Chadwick Boseman",
-          "character_name": "",
-          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm1569276.jpg",
-          "imdb_code": "1569276"
-        },
-        {
-          "name": "Danai Gurira",
-          "character_name": "Okoye",
-          "url_small_image": "https://yts.mx/assets/images/actors/thumb/nm1775091.jpg",
-          "imdb_code": "1775091"
-        }
-      ],
-      "torrents": [
-        {
-          "url": "https://yts.mx/torrent/download/9588EA0C877B8477400E81DBFEF899D139461F57",
-          "hash": "9588EA0C877B8477400E81DBFEF899D139461F57",
-          "quality": "3D",
-          "type": "bluray",
-          "seeds": 47,
-          "peers": 21,
-          "size": "2.16 GB",
-          "size_bytes": 2319282340,
-          "date_uploaded": "2018-05-28 11:28:32",
-          "date_uploaded_unix": 1527499712
-        },
-        {
-          "url": "https://yts.mx/torrent/download/584CB082CB19D81DBABE3E201D89976459D495EA",
-          "hash": "584CB082CB19D81DBABE3E201D89976459D495EA",
-          "quality": "720p",
-          "type": "bluray",
-          "seeds": 994,
-          "peers": 189,
-          "size": "1.13 GB",
-          "size_bytes": 1213328261,
-          "date_uploaded": "2018-05-02 04:38:17",
-          "date_uploaded_unix": 1525228697
-        },
-        {
-          "url": "https://yts.mx/torrent/download/E156CE70FEE6464549FEF653C8468AECB3E7E9F1",
-          "hash": "E156CE70FEE6464549FEF653C8468AECB3E7E9F1",
-          "quality": "1080p",
-          "type": "bluray",
-          "seeds": 1593,
-          "peers": 311,
-          "size": "2.17 GB",
-          "size_bytes": 2330019758,
-          "date_uploaded": "2018-05-02 07:08:38",
-          "date_uploaded_unix": 1525237718
-        }
-      ],
-      "date_uploaded": "2018-05-02 04:38:17",
-      "date_uploaded_unix": 1525228697,
-      "suggestions": [
-        {
-          "medium_cover_image": "https://yts.mx/assets/images/movies/Takers_2010/medium-cover.jpg",
-          "title_long": "Takers (2010)",
-          "id": 2972
-        },
-        {
-          "medium_cover_image": "https://yts.mx/assets/images/movies/Star_Trek_First_Contact_1996/medium-cover.jpg",
-          "title_long": "Star Trek: First Contact (1996)",
-          "id": 2847
-        },
-        {
-          "medium_cover_image": "https://yts.mx/assets/images/movies/handsome_siblings_1992/medium-cover.jpg",
-          "title_long": "Handsome Siblings (1992)",
-          "id": 13889
-        },
-        {
-          "medium_cover_image": "https://yts.mx/assets/images/movies/Dear_John_2010/medium-cover.jpg",
-          "title_long": "Dear John (2010)",
-          "id": 869
         }
       ]
     },

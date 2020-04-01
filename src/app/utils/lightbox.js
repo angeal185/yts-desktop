@@ -41,12 +41,12 @@ const lightbox = {
     }
 
     lb_content.append(
-      h('a.lb-prev.fa.fa-chevron-left', {
+      h('a.lb-prev.icon-chevron-left', {
         onclick: function(){
           lightbox.plusSlides(-1);
         }
       }),
-      h('a.lb-next.fa.fa-chevron-right', {
+      h('a.lb-next.icon-chevron-right', {
         onclick: function(){
           lightbox.plusSlides(1);
         }

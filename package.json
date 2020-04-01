@@ -23,35 +23,10 @@
   },
   "homepage": "https://github.com/angeal185/yts-desktop#readme",
   "config": {
-    "forge": {
-      "packagerConfig": {},
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "yts_desktop"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
-        }
-      ]
-    }
+    "forge": "./forge_config.js"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
-    "fs-extra": "^9.0.0",
     "lowdb": "^1.0.0"
   },
   "devDependencies": {
