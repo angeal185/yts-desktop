@@ -1,70 +1,147 @@
 {
+  "base_file": "/app/index.html",
   "base_url": "https://yts.mx/api/v2/",
-  "sub_url": "https://www.yifysubtitles.com/subtitle/",
+  "yts_url": "https://yts.mx",
+  "sub_url": "https://www.yifysubtitles.com",
+  "trailer_url": "https://www.youtube.com/embed/{{id}}",
   "settings": {
     "dev": true,
+    "ico": "/app/static/img/ico.png",
+    "downloads": "./downloads",
     "landing": "home",
-    "logo": "static/images/lg_50.png",
-    "svg": {
-      "light": "static/images/lg_400_l.svg",
-      "dark": "static/images/lg_400.svg"
-    },
+    "logo": "./static/img/logo.svg",
     "subtitles": true,
     "subtitle_lang": "english",
-    "subtitle_items":[
-      "english", "albanian", "arabic", "bengali", "brazilian", "portuguese", "bulgarian", "chinese", "croatian", "czech", "danish", "dutch", "finnish", "french", "german", "greek", "hebrew", "hungarian", "indonesian", "italian", "japanese", "korean", "lithuanian", "macedonian", "malay", "norwegian", "polish", "portuguese", "romanian", "russian", "serbian", "slovenian", "spanish", "swedish", "thai", "turkish", "urdu", "vietnamese"
+    "subtitle_items": [
+      "english",
+      "albanian",
+      "arabic",
+      "bengali",
+      "brazilian",
+      "portuguese",
+      "bulgarian",
+      "chinese",
+      "croatian",
+      "czech",
+      "danish",
+      "dutch",
+      "finnish",
+      "french",
+      "german",
+      "greek",
+      "hebrew",
+      "hungarian",
+      "indonesian",
+      "italian",
+      "japanese",
+      "korean",
+      "lithuanian",
+      "macedonian",
+      "malay",
+      "norwegian",
+      "polish",
+      "portuguese",
+      "romanian",
+      "russian",
+      "serbian",
+      "slovenian",
+      "spanish",
+      "swedish",
+      "thai",
+      "turkish",
+      "urdu",
+      "vietnamese"
     ],
     "history_max": 50,
     "saved_max": 50,
     "home_cache": 10800000,
     "cors_cache_json": 3600,
-    "cors_cache_html": 86400
+    "cors_cache_html": 86400,
+    "img_cache": true,
+    "subs_cache": true,
+    "to_top": true,
+    "status_bar": true
   },
   "search": {
-    "sort_by": ["title", "year", "rating", "peers", "seeds", "download_count", "like_count", "date_added"],
-    "quality": ["all", "720p", "1080p", "2160p", "3D"],
-    "minimum_rating":["all","1","2","3","4","5","6","7","8","9"],
-    "genre": [
-      "all",
-      "action",
-      "adventure",
-      "animation",
-      "biography",
-      "comedy",
-      "crime",
-      "documentary",
-      "drama",
-      "family",
-      "fantasy",
-      "film-noir",
-      "game-show",
-      "history",
-      "horror",
-      "music",
-      "musical",
-      "mystery",
-      "news",
-      "reality-tv",
-      "romance",
-      "sci-fi",
-      "sport",
-      "talk-show",
-      "thriller",
-      "war",
-      "western"
+    "sort_by": [
+      "title",
+      "rating",
+      "date_uploaded",
+      "votes",
+      "published",
+      "year",
+      "runtime"
     ],
-    "limit": ["50","40","30","20","10"],
-    "order_by": ["desc", "asc"]
+    "quality": [
+      "All",
+      "720p",
+      "1080p",
+      "2160p",
+      "3D"
+    ],
+    "minimum_rating": [
+      "All",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9"
+    ],
+    "genre": [
+      "All",
+      "Action",
+      "Adventure",
+      "Animation",
+      "Biography",
+      "Comedy",
+      "Crime",
+      "Documentary",
+      "Drama",
+      "Family",
+      "Fantasy",
+      "Film-Noir",
+      "Game-Show",
+      "History",
+      "Horror",
+      "Music",
+      "Musical",
+      "Mystery",
+      "News",
+      "Reality-TV",
+      "Romance",
+      "Sci-Fi",
+      "Sport",
+      "Talk-Show",
+      "Thriller",
+      "War",
+      "Western"
+    ],
+    "limit": [
+      "50",
+      "40",
+      "30",
+      "20",
+      "10"
+    ],
+    "order_by": [
+      "desc",
+      "asc"
+    ]
   },
   "trackers": [
+    "udp://tracker.leechers-paradise.org:6969",
+    "udp://tracker.opentrackr.org:1337/announce",
     "udp://open.demonii.com:1337/announce",
     "udp://tracker.openbittorrent.com:80",
     "udp://tracker.coppersurfer.tk:6969",
+    "udp://tracker.internetwarriors.net:1337",
     "udp://glotorrents.pw:6969/announce",
-    "udp://tracker.opentrackr.org:1337/announce",
     "udp://torrent.gresille.org:80/announce",
-    "udp://p4p.arenabg.com:1337",
-    "udp://tracker.leechers-paradise.org:6969"
+    "udp://p4p.arenabg.com:1337"
   ],
   "sb_nav": {
     "side": "left",
@@ -77,16 +154,24 @@
         "dest": "home"
       },
       {
-        "title": "Browse",
+        "title": "Browse Movies",
         "dest": "browse"
       },
       {
-        "title": "Recent",
+        "title": "Popular Movies",
+        "dest": "popular"
+      },
+      {
+        "title": "Recent Release",
+        "dest": "release"
+      },
+      {
+        "title": "Recent Uploads",
         "dest": "recent"
       },
       {
-        "title": "Popular",
-        "dest": "popular"
+        "title": "Cast & Crew",
+        "dest": "cast"
       },
       {
         "title": "History",
@@ -120,7 +205,6 @@
     "skipTaskbar": false,
     "kiosk": false,
     "title": "yts movies",
-    "icon": "./app/static/img/ico.png",
     "show": true,
     "frame": true,
     "parent": null,
@@ -142,7 +226,6 @@
       "nodeIntegration": true,
       "nodeIntegrationInWorker": false,
       "nodeIntegrationInSubFrames": false,
-      "preload": "",
       "sandbox": false,
       "enableRemoteModule": true,
       "zoomFactor": 1,
@@ -170,9 +253,64 @@
       "autoplayPolicy": "no-user-gesture-required"
     }
   },
+  "CSS": "/app/static/css/main.min.css",
+  "fontface": [
+    {
+      "name": "ico",
+      "path": "/app/static/fonts/ico.woff2",
+      "style": "normal",
+      "weight": 400
+    },
+    {
+      "name": "Arimo",
+      "path": "/app/static/fonts/arimo/italic_400.woff2",
+      "style": "italic",
+      "weight": 400
+    },
+    {
+      "name": "Arimo",
+      "path": "/app/static/fonts/arimo/bold_italic_700.woff2",
+      "style": "italic",
+      "weight": 700
+    },
+    {
+      "name": "Arimo",
+      "path": "/app/static/fonts/arimo/regular_400.woff2",
+      "style": "normal",
+      "weight": 400
+    },
+    {
+      "name": "Arimo",
+      "path": "/app/static/fonts/arimo/bold_700.woff2",
+      "style": "normal",
+      "weight": 700
+    }
+  ],
   "gzip": {
     "level": 9,
     "memLevel": 9,
     "strategy": 0
+  },
+  "glide": {
+    "type": "carousel",
+    "startAt": 0,
+    "perView": 4,
+    "autoplay": 5000,
+    "hoverpause": true,
+    "keyboard": false,
+    "animationDuration": 1000,
+    "animationTimingFunc": "cubic-bezier(0,1.36,1,-0.5)",
+    "throttle": 50,
+    "breakpoints": {
+      "800": {
+        "perView": 3
+      },
+      "600": {
+        "perView": 2
+      },
+      "400": {
+        "perView": 1
+      }
+    }
   }
 }

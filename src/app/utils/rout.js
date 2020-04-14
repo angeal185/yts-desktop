@@ -1,86 +1,213 @@
 const config = require('../config'),
+fs = require('fs'),
 tpl = require('./tpl'),
 h = require('./h'),
+_ = require('lodash'),
+s_db = require('../db/staff_db'),
 pagination = require('./pagination'),
 {ls,ss} = require('./storage');
+
+const Glide = require('./glide')
 
 const rout = {
   home: function(dest){
 
-    let list_recent = h('div.row',
+    let recent_slide = h('div.glide__slides'),
+    release_slide = recent_slide.cloneNode(),
+    popular_slide = recent_slide.cloneNode(),
+    list_recent = h('div.row',
       h('div.col-12.text-center',
         h('h2', 'Recent Uploads'),
         h('hr.w-100')
+      ),
+      h('div#recent_glide.glide',
+        h('div.glide__track',{
+            'data-glide-el': 'track'
+          },
+          recent_slide,
+          tpl.glide_arrow()
+        )
+      )
+    ),
+    list_release = h('div.row',
+      h('div.col-12.text-center',
+        h('h2', 'Recent release'),
+        h('hr.w-100')
+      ),
+      h('div#release_glide.glide',
+        h('div.glide__track',{
+            'data-glide-el': 'track'
+          },
+          release_slide,
+          tpl.glide_arrow()
+        )
       )
     ),
     list_popular = h('div.row',
       h('div.col-12.text-center',
-        h('h2', 'Popular Downloads'),
+        h('h2', 'Popular Movies'),
         h('hr.w-100')
+      ),
+      h('div#popular_glide.glide',
+        h('div.glide__track',{
+            'data-glide-el': 'track'
+          },
+          popular_slide,
+          tpl.glide_arrow()
+        )
       )
     );
 
-    let home_cache = ls.get('home_cache');
-    if(!home_cache ||
-      typeof home_cache !== 'object' ||
-       !home_cache.recent ||
-       !home_cache.popular ||
-       home_cache.date < Date.now()
-    ){
-      let obj = {
-        date: Date.now() + config.settings.home_cache
-      }
-      utils.fetch(config.base_url + 'list_movies.json?limit=20&sort_by=date_added', function(err,res_rec){
-        if(err){return ce(err)}
-        obj.recent = res_rec.movies;
-        for (let i = 0; i < res_rec.movies.length; i++) {
-          list_recent.append(tpl.item_post(res_rec.movies[i]))
-        }
+    let res_rec = movie_db.orderBy('date_uploaded', 'desc').take(50).shuffle().take(12).value();
+    res_pop = movie_db.orderBy('rating', 'desc').take(50).shuffle().take(12).value(),
+    res_rel = movie_db.orderBy('year', 'desc').take(50).shuffle().take(12).value();
 
-        utils.fetch(config.base_url + 'list_movies.json?limit=20&sort_by=download_count', function(err,res_pop){
-          if(err){return ce(err)}
-          obj.popular = res_pop.movies;
-          for (let i = 0; i < res_pop.movies.length; i++) {
-            list_popular.append(tpl.item_post(res_pop.movies[i]))
-          }
-
-          ls.set('home_cache', obj)
-          dest.append(
-            list_popular,
-            list_recent,
-            tpl.cat_cloud()
-          )
-        })
-
-      })
-    } else {
-
-      for (let i = 0; i < home_cache.recent.length; i++) {
-        list_recent.append(tpl.item_post(home_cache.recent[i]))
-      }
-      for (let i = 0; i < home_cache.popular.length; i++) {
-        list_popular.append(tpl.item_post(home_cache.popular[i]))
-      }
-
-      dest.append(
-        list_popular,
-        list_recent,
-        tpl.cat_cloud()
-      )
-
+    for (let i = 0; i < res_rec.length; i++) {
+      recent_slide.append(tpl.item_glide(res_rec[i]))
     }
 
+    list_recent.append(tpl.show_all_btn('recent'))
+
+    for (let i = 0; i < res_pop.length; i++) {
+      popular_slide.append(tpl.item_glide(res_pop[i]))
+    }
+
+    list_popular.append(tpl.show_all_btn('popular'))
+
+    for (let i = 0; i < res_rel.length; i++) {
+      release_slide.append(tpl.item_glide(res_rel[i]))
+    }
+
+    list_release.append(tpl.show_all_btn('release'))
+
+
+    dest.append(
+      list_recent,
+      tpl.actor_cloud(),
+      list_popular,
+      tpl.director_cloud(),
+      list_release,
+      tpl.cat_cloud()
+    )
+
+    new Glide('#recent_glide', config.glide).mount()
+    new Glide('#release_glide', config.glide).mount()
+    new Glide('#popular_glide', config.glide).mount()
 
   },
   recent: function(){
     ss.set('dest', 'search');
-    ss.set('search_url', utils.build_search_url({sort_by:'date_added'}));
+    yts_db.set('search', movie_db.orderBy(['date_uploaded'], ['desc']).chunk(20).value()).write();
+    ss.set('pag-current', 1)
     location.hash = 'search/recent';
+  },
+  release: function(){
+    ss.set('dest', 'search');
+    ss.set('pag-current', 1)
+    yts_db.set('search', movie_db.orderBy(['year'], ['desc']).chunk(20).value()).write();
+    location.hash = 'search/release';
   },
   popular: function(){
     ss.set('dest', 'search');
-    ss.set('search_url', utils.build_search_url({sort_by:'download_count'}));
-    location.hash = 'search/popular'
+    yts_db.set(
+      'search',
+      movie_db.orderBy(['rating'], ['desc']).chunk(20).value()
+    ).write();
+    ss.set('pag-current', 1)
+    location.hash = 'search/popular';
+  },
+  cast: function(dest){
+    ss.set('cdw_search', 'cast')
+    let c_div = h('div.card.bg-dark.bd-dark.mb-4',
+      h('div.card-body.text-center')
+    ),
+    d_div = c_div.cloneNode(true),
+    w_div = c_div.cloneNode(true),
+    sel_item = h('span','Cast'),
+    base = h('div.row.justify-content-center',
+      h('div.col-md-6.col-sm-12.text-center',
+        h('h4.text-success.mb-4', 'Search ', sel_item),
+        h('div.form-group.mb-4',
+          h('input.form-control.inp-dark.text-center',{
+            placeholder: 'Search...',
+            onkeyup: utils.debounce(function(evt){
+              let val = evt.target.value;
+              utils.emptySync(c_div.firstChild)
+              if(val.length > 1){
+                if(ss.get('cdw_search') === 'cast'){
+                  for (let i = 0; i < s_db.actors.length; i++) {
+                    if(s_db.actors[i].toLowerCase().includes(val.toLowerCase())){
+                      c_div.firstChild.append(tpl.cast_btn(s_db.actors[i]))
+                    }
+                  }
+                } else if(ss.get('cdw_search') === 'directors'){
+                  for (let i = 0; i < s_db.directors.length; i++) {
+                    if(s_db.directors[i].toLowerCase().includes(val.toLowerCase())){
+                      c_div.firstChild.append(tpl.crew_btn(s_db.directors[i], 'director'))
+                    }
+                  }
+                } else if(ss.get('cdw_search') === 'writters'){
+                  for (let i = 0; i < s_db.writters.length; i++) {
+                    if(s_db.writters[i].toLowerCase().includes(val.toLowerCase())){
+                      c_div.firstChild.append(tpl.crew_btn(s_db.writters[i], 'writter'))
+                    }
+                  }
+                }
+
+              }
+
+            }, 1000)
+          })
+        ),
+        h('div.row',
+          h('div.col-md-4',
+            h('button.btn.btn-block.btn-outline-success.mt-2.mb-4.sh-95',{
+              type: 'button',
+              onclick: function(evt){
+                utils.add_sp(this, 'Loading...', function(){
+                  ss.set('cdw_search', 'cast');
+                  sel_item.innerText = 'Cast';
+                  utils.emptySync(c_div.firstChild);
+                  utils.remove_sp(evt.target, 'Cast');
+                })
+
+              }
+            }, h('span', 'Cast'))
+          ),
+          h('div.col-md-4',
+            h('button.btn.btn-block.btn-outline-success.mt-2.mb-4.sh-95',{
+              type: 'button',
+              onclick: function(evt){
+                utils.add_sp(this, 'Loading...', function(){
+                  ss.set('cdw_search', 'directors');
+                  sel_item.innerText = 'Directors';
+                  utils.emptySync(c_div.firstChild);
+                  utils.remove_sp(evt.target, 'Directors');
+                })
+              }
+            }, 'Directors')
+          ),
+          h('div.col-md-4',
+            h('button.btn.btn-block.btn-outline-success.mt-2.mb-4.sh-95',{
+              type: 'button',
+              onclick: function(evt){
+                utils.add_sp(this, 'Loading...', function(){
+                  ss.set('cdw_search', 'writters');
+                  sel_item.innerText = 'Writters';
+                  utils.emptySync(c_div.firstChild);
+                  utils.remove_sp(evt.target, 'Writters');
+                })
+              }
+            }, 'Writters')
+          )
+        )
+      ),
+      h('div.col-12',
+        c_div
+      )
+    )
+
+    dest.append(base);
   },
   search: function(dest){
 
@@ -93,73 +220,270 @@ const rout = {
     ),
     pag_view_main = h('div#pag_view_main.row'),
     search_url = ss.get('search_url'),
-    pag_div = h('div#pagination.row');
+    pag_div = h('div#pagination.row'),
+    p_current = ss.get('pag-current')
+    pag_num = h('span#pagnum', p_current),
+    res = search_db.value();
 
-    utils.fetch(config.base_url + 'list_movies.json?page=1' + search_url, function(err,res){
-      if(err){return ce(err)}
-      cl(res)
-      for (let i = 0; i < res.movies.length; i++) {
-        pag_view_main.append(tpl.item_post(res.movies[i]))
+    window.page_num = function(i){
+      pag_num.innerText = i;
+    }
+
+    window.page_change = function(){
+      let page_res = res[ss.get('pag-current') - 1]
+
+      utils.emptySync(pag_view_main);
+
+      for (let i = 0; i < page_res.length; i++) {
+        pag_view_main.append(tpl.item_post(page_res[i]))
       }
 
-      if(res.movie_count > res.limit){
+      utils.totop(0)
+    }
 
-        let max = Math.ceil(res.movie_count / res.limit),
-        item;
+    for (let i = 0; i < res[p_current - 1].length; i++) {
+      pag_view_main.append(tpl.item_post(res[p_current - 1][i]))
+    }
 
+    if(res.length > 1){
 
+      let max = res.length,
+      item;
 
-        ss.set('pag-current', 1);
-        ss.set('pag-max', max);
+      ss.set('pag-max', max);
 
-        if(max < 6){
-          item = h('ul.pagination.col-md-6');
-          for (let i = 0; i < max; i++) {
-            item.append(pagination.pageItem(max,g.js(i + 1)))
-          }
-        } else {
-          item = h('ul.pagination.col-md-6',
-            pagination.prevlink(max),
-            pagination.pag_back(max),
-            pagination.pageItem(max,'2'),
-            pagination.pageItem(max,'3'),
-            pagination.pageItem(max,'4'),
-            pagination.pag_forw(max),
-            pagination.nextlink(max)
-          )
+      if(max < 6){
+        item = h('ul.pagination.col-md-6');
+        for (let i = 0; i < max; i++) {
+          item.append(pagination.pageItem(js(i + 1)))
         }
-
-        pag_div.append(
-          item,h('div.pag-text.col-md-6.text-right', 'viewing page ', h('span#pagnum', '1'), ' of '+ max)
-        )
-
-        dest.append(
-          search_res,
-          pag_view_main,
-          h('div.container', pag_div)
-        )
-
       } else {
-        dest.append(
-          search_res,
-          pag_view_main
+        item = h('ul.pagination.col-md-6',
+          pagination.prevlink(),
+          pagination.pag_back(p_current),
+          pagination.pageItem(p_current + 1),
+          pagination.pageItem(p_current + 2),
+          pagination.pageItem(p_current + 3),
+          pagination.pag_forw(max,p_current),
+          pagination.nextlink(max)
         )
       }
-    })
 
+      pag_div.append(
+        item,h('div.pag-text.col-md-6.text-right', 'viewing page ', pag_num, ' of '+ max)
+      )
+
+      dest.append(
+        search_res,
+        pag_view_main,
+        h('div.container', pag_div)
+      )
+
+    } else {
+      dest.append(
+        search_res,
+        pag_view_main
+      )
+    }
 
   },
   settings: function(main, cb){
 
+    let ic_toggle = h('input.form-control.inp-dark.mb-2',{
+      readOnly: true,
+      value: config.settings.img_cache
+    }),
+    is_toggle = h('input.form-control.inp-dark.mb-2',{
+     readOnly: true,
+     value: config.settings.subs_cache
+   })
+
+
+    let base_div = h('div.row',
+      h('h3.col-12.mb-2', 'Base settings'),
+      h('div.col.md-6',
+        h('div.form-group',
+          h('label', 'site url'),
+          h('input.form-control.inp-dark',{
+            value: config.yts_url,
+            onkeyup: utils.debounce(function(){
+              let val = this.value;
+              if(val.length > 0){
+                config.yts_url = val;
+                utils.update_settings(config);
+              }
+            },2000)
+          })
+        )
+      ),
+      h('div.col.md-6',
+        h('div.form-group',
+          h('label', 'subtitles url'),
+          h('input.form-control.inp-dark',{
+            value: config.sub_url,
+            onkeyup: utils.debounce(function(){
+              let val = this.value;
+              if(val.length > 0){
+                config.sub_url = val;
+                utils.update_settings(config);
+              }
+            },2000)
+          })
+        )
+      ),
+      h('div.col-12', h('hr')),
+      h('h3.col-12.mb-2', 'Cache settings'),
+      h('div.col-md-6',
+        h('div.form-group',
+          h('label', 'image cache size'),
+          h('input.form-control.inp-dark.mb-2',{
+            readOnly: true,
+            value: function(){
+              return utils.formatBytes(fs.statSync(base_dir + '/app/cache/img').size)
+            }
+          }),
+          h('label', 'image cache count'),
+          h('input.form-control.inp-dark.mb-2',{
+            readOnly: true,
+            value: img_cache.value().length
+          }),
+          h('label.w-100.cp', 'image cache enabled',
+            h('span.float-right.text-success', {
+              onclick: function(evt){
+                if(config.settings.img_cache){
+                  config.settings.img_cache = false;
+                  ic_toggle.value = false
+                } else {
+                  config.settings.img_cache = true;
+                  ic_toggle.value = true
+                }
+                utils.update_settings(config);
+              }
+            },'toggle')
+          ),
+          ic_toggle
+        )
+      ),
+      h('div.col-md-6',
+        h('div.form-group',
+          h('label', 'subtitles cache size'),
+          h('input.form-control.inp-dark.mb-2',{
+            readOnly: true,
+            value: function(){
+              return utils.formatBytes(fs.statSync(base_dir + '/app/cache/subs').size)
+            }
+          }),
+          h('label', 'subtitles cache count'),
+          h('input.form-control.inp-dark.mb-2',{
+            readOnly: true,
+            value: subs_cache.value().length
+          }),
+          h('label.w-100.cp', 'subtitles cache enabled',
+            h('span.float-right.text-success', {
+              onclick: function(evt){
+                if(config.settings.subs_cache){
+                  config.settings.subs_cache = false;
+                  is_toggle.value = false
+                } else {
+                  config.settings.subs_cache = true;
+                  is_toggle.value = true
+                }
+                utils.update_settings(config);
+              }
+            },'toggle')
+          ),
+          is_toggle
+        )
+      )
+
+    )
+
+    main.append(base_div);
   },
   browse: function(main, cb){
-    let obj = {},
-    sel_row = h('div.row'),
+    let obj = {order_by: 'desc', limit: 20, sort_by: 'rating'},
+    sel_row = h('div.row.mb-4'),
+    base = h('div.row.justify-content-center',
+      h('div.col-md-6.col-sm-12.text-center',
+        h('h4.text-success.mb-4', 'Advanced Search'),
+        h('div.input-group.mb-4',
+          h('input.form-control.inp-dark.text-center',{
+            placeholder: 'Search term...',
+            onkeyup: function(evt){
+              obj.query_term = evt.target.value;
+            }
+          }),
+          h('div.input-group-append',
+            h('button.btn.btn-outline-success',{
+              type: 'button',
+              onclick: function(){
+                cl(obj)
+
+                if(typeof obj.limit === 'string'){
+                  obj.limit = parseInt(obj.limit);
+                }
+
+                let sdb = movie_db.value();
+
+                if(obj.query_term && obj.query_term !== ''){
+                  sdb = sdb.filter(function(x){
+                     return x.title.toLowerCase().includes(obj.query_term.toLowerCase())
+                  });
+                }
+
+                if(obj.minimum_rating && obj.minimum_rating !== 'All'){
+                  sdb = sdb.filter(function(x){
+                     return x.rating >= parseInt(obj.minimum_rating)
+                  });
+                }
+
+                if(obj.genre && obj.genre !== 'All'){
+                  sdb = sdb.filter(function(o){
+                    let item = o.genres;
+                    if(item.indexOf(obj.genre) !== -1){
+                      return o;
+                    }
+                  })
+                }
+
+                if(obj.quality && obj.quality !== 'All'){
+                  sdb = sdb.filter(function(o){
+                    let item = o.genres;
+                    for (let i = 0; i < o.torrents.length; i++) {
+                      if(o.torrents[i].quality === obj.quality){
+                        return o;
+                      }
+                    }
+                  })
+                }
+
+                if(obj.sort_by === 'published'){
+                  sdb = sdb.filter(function(o){
+                    if(typeof o.published === 'string' && o.published !== 'N/A'){
+                      return o;
+                    }
+                  })
+                }
+
+                sdb = _.chunk(_.orderBy(sdb, [obj.sort_by], [obj.order_by]), obj.limit);
+
+                yts_db.set('search',sdb).write();
+                ss.set('pag-current', 1);
+
+                ss.set('search_url', ['search', 'advanced']);
+                location.hash = 'search/advanced';
+              }
+            }, 'Search')
+          )
+        )
+      )
+    ),
     sel;
 
     for (let key in config.search) {
 
       sel = h('select.form-control.custom-select.inp-dark', {
+        size: 8,
         onchange: function(evt){
           obj[key] = evt.target.value;
           cl(obj)
@@ -174,8 +498,8 @@ const rout = {
       }
 
       sel_row.append(
-        h('div.col-md.col-sm-4',
-          h('div.form-group',
+        h('div.col-md-4.col-sm-4',
+          h('div.form-group.mb-4',
             h('label', key.replace('_', ' ')),
             sel
           )
@@ -183,29 +507,11 @@ const rout = {
       )
     }
 
-    let base = h('div.row.justify-content-center',
-      h('div.col-md-6.col-sm-12',
-        h('div.input-group.mb-4',
-          h('input.form-control.inp-dark.text-center',{
-            placeholder: 'Search term...',
-            onkeyup: function(evt){
-              obj.query_term = encodeURIComponent(evt.target.value);
-            }
-          }),
-          h('div.input-group-append',
-            h('button.btn.btn-outline-success',{
-              type: 'button',
-              onclick: function(){
-                ss.set('search_url', utils.build_search_url(obj));
-                location.hash = 'search/advanced';
-              }
-            }, 'Search')
-          )
-        )
-      )
-    )
+    sel_row.append(h('div.col-12',
+      h('hr')
+    ))
 
-    main.append(base, sel_row)
+    main.append(base, sel_row, tpl.cat_cloud())
   },
   history: function(main, cb){
 
@@ -246,53 +552,18 @@ const rout = {
     )
   },
   movie: function(dest){
-    let id = ss.get('mov_id');
-    if(!id || typeof parseInt(id) !== 'number'){
+    let id = parseInt(ss.get('mov_id'));
+    if(!id || typeof id !== 'number'){
       return ce('invalid movie id')
     }
 
-    let db_item = his_db.find({id: parseInt(id)}).value();
+    let res = movie_db.find({id: id}).value()
+    dest.append(tpl.item_page(res))
 
-    if(!db_item){
-      cl('not found')
-      id = 'movie_details.json?movie_id='+ id +'&with_images=true&with_cast=true';
-      utils.fetch(config.base_url + id, function(err,res){
-        if(err){return ce(err)}
-        res = res.movie;
-        utils.fetch(config.base_url +'movie_suggestions.json?movie_id='+ res.id, function(err,sim){
-          if(err){
-            res.suggestions = ls.get('suggest') || [];
-          } else {
-            sim = sim.movies;
-            let arr = [];
-            for (let i = 0; i < sim.length; i++) {
-              arr.push({
-                medium_cover_image: sim[i].medium_cover_image,
-                title_long: sim[i].title_long,
-                id: sim[i].id
-              })
-              ls.set('suggest', arr);
-              res.suggestions = arr
-            }
-          }
-
-          dest.append(tpl.item_page(res))
-
-          his_db.unshift(res).write();
-
-          if(his_db.size().value() > config.settings.history_max){
-            his_db.pop().write();
-          }
-
-        })
-      })
-    } else {
-
-      dest.append(tpl.item_page(db_item))
-
-      his_db.remove(db_item).write();
-      his_db.unshift(db_item).write();
-
+    his_db.remove({id: id}).write()
+    his_db.unshift(res).write();
+    if(his_db.size().value() > config.settings.history_max){
+      his_db.pop().write();
     }
 
   }

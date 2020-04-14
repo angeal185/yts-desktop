@@ -6,6 +6,19 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+build/tmp/**
+downloads/db/**
+downloads/subs/**
+downloads/torrent/**
+
+src/app/cache/subs/**
+src/app/cache/img/**
+src/app/cache/db/**
+
+src/app/db/staff_db.bak.json
+src/app/db/yts_db.bak.json
+
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 

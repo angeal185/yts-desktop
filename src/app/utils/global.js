@@ -2,27 +2,57 @@ let dir = __dirname.split('/');
 dir = dir.slice(0,-2);
 global.base_dir = dir.join('/');
 
-const low = require('lowdb'),
-FileSync = require('lowdb/adapters/FileSync'),
-adapter = new FileSync(base_dir +'/app/db/db.json'),
-config = require('../config');
+global.js = JSON.stringify;
+global.jp = JSON.parse;
 
-//global db
+const config = require('../config'),
+low = require('lowdb'),
+FileSync = require('lowdb/adapters/FileSync'),
+adapter = new FileSync(base_dir +'/app/db/db.json', {
+  serialize: function(obj){
+    return js(obj)
+  },
+  deserialize: function(data){
+    return jp(data)
+  }
+}),
+yts_adapter = new FileSync(base_dir +'/app/db/yts_db.json', {
+  serialize: function(obj){
+    return js(obj)
+  },
+  deserialize: function(data){
+    return jp(data)
+  }
+});
+
 global.db = low(adapter)
+global.yts_db = low(yts_adapter)
 
 db.defaults({
-  history:[],
-  saved: []
+//  history:[],
+  saved: [],
+  img_cache: [],
+  subs_cache: []
 }).write();
 
+yts_db.defaults({
+  movies:[],
+  search:[],
+  status: []
+}).write();
+
+global.movie_db = yts_db.get('movies');
+global.status_db = yts_db.get('status');
+global.search_db = yts_db.get('search');
 global.his_db = db.get('history');
 global.save_db = db.get('saved');
+global.img_cache = db.get('img_cache');
+global.subs_cache = db.get('subs_cache');
+global.scrap_cnt = 0;
 
 //global vars
 global.cl = console.log;
 global.ce = console.error;
-global.js = JSON.stringify;
-global.jp = JSON.parse;
 global.LS = localStorage;
 global.SS = sessionStorage;
 

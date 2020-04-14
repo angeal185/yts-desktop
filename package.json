@@ -21,18 +21,21 @@
   "bugs": {
     "url": "https://github.com/angeal185/yts-desktop/issues"
   },
-  "homepage": "https://github.com/angeal185/yts-desktop#readme",
+  "homepage": "https://github.com/angeal185/yts-desktop",
   "config": {
     "forge": "./forge_config.js"
   },
   "dependencies": {
+    "bittorrent-tracker": "^9.14.5",
     "electron-squirrel-startup": "^1.0.0",
+    "jpegtran-bin": "^4.0.0",
     "lowdb": "^1.0.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.39",
     "@electron-forge/maker-deb": "^6.0.0-beta.39",
     "@electron-forge/maker-rpm": "^6.0.0-beta.39",
+    "@electron-forge/maker-snap": "^6.0.0-beta.50",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.39",
     "@electron-forge/maker-zip": "^6.0.0-beta.39",
     "electron": "8.2.0"

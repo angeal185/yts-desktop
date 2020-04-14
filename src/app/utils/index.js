@@ -1,23 +1,97 @@
 const fs = require('fs'),
 h = require('./h'),
+config = require('../config'),
 rout = require('./rout'),
+request = require('request'),
+{ ipcRenderer } = require('electron'),
+execFile = require('child_process').execFile,
+jpegtran = require('jpegtran-bin'),
 tpl = require('./tpl'),
+scrap = require('./scrap'),
 {ls,ss} = require('./storage');
 
 const utils = {
-  pre: function(cb){
+  pre: function(doc, cb){
     try {
-      let sheet = new CSSStyleSheet();
-      document.title = config.main_cnf.title;
-      sheet.replaceSync(fs.readFileSync(base_dir +'/app/static/css/main.min.css', 'utf8'));
-      document.adoptedStyleSheets = [sheet];
-      if(!ls.get('suggest')){
-        ls.set('suggest', [])
+
+      for (let i = 0; i < config.fontface.length; i++) {
+        utils.add_font(config.fontface[i], doc);
       }
-      return cb(false)
+
+      utils.add_styles(doc);
+
+      if(!ls.get('suggest')){
+        ls.set('suggest', []);
+      }
+
+      return cb(false);
     } catch (err) {
-      if(err){return cb(err)}
+      if(err){return cb(err);}
     }
+  },
+  add_styles: function(doc){
+    let sheet = new CSSStyleSheet();
+    sheet.replaceSync(fs.readFileSync(base_dir + config.CSS, 'utf8'));
+    doc.adoptedStyleSheets = [sheet];
+  },
+  add_font: function(obj, doc){
+    let buff = new Uint8Array(fs.readFileSync(base_dir + obj.path)).buffer;
+    buff = new FontFace(obj.name, buff, {
+      style: obj.style,
+      weight: obj.weight
+    })
+
+    buff.load().then(function(res) {
+      doc.fonts.add(res);
+    }).catch(function(err) {
+      cl(obj.path +' failed to load')
+    });
+
+  },
+  update_settings: function(cnf){
+    fs.writeFileSync(base_dir + '/app/config/index.json', JSON.stringify(cnf,0,2));
+    require.cache[base_dir + '/app/config/index.json'].exports = cnf;
+    utils.toast('success', 'Settings updated');
+  },
+  update_db: function(res){
+    if(!res.success){
+      return utils.toast(res.type, res.msg)
+    }
+
+    let cachedb = [base_dir, urls.dbcache].join('/');
+
+    fs.readFile(cachedb, 'utf8', function(err, data){
+      if(err){
+        utils.toast('danger', 'database update failed')
+        return cl(err);
+      }
+
+      data = jp(data);
+      yts_db.set('movies', data);
+
+      fs.unlink(cachedb, function(err){
+        if(err){
+          cl(cachedb + ' was not deleted');
+        } else {
+          cl(cachedb + ' was deleted');
+        }
+
+        window.dispatchEvent(
+          new CustomEvent('db-status', {
+            detail: 1
+          })
+        );
+
+        return utils.toast('success', 'db update complete');
+
+      })
+    })
+  },
+  cache_img: function(url){
+    ipcRenderer.send('dl-img', url)
+  },
+  cache_img_reset: function(){
+    db.set('img_cache', []).write();
   },
   empty: function(i, cb){
     while (i.firstChild) {
@@ -30,13 +104,13 @@ const utils = {
       i.removeChild(i.firstChild);
     }
   },
-  init: function(){
-    let x = document;
-    x.body.append(
-      tpl.base(),
+  init: function(doc){
+    let main = tpl.base();
+    doc.body.append(
+      main
     )
 
-    let main = document.getElementById('app-main');
+    main = main.lastChild;
 
     window.addEventListener('hashchange', function() {
       let dest = location.hash.slice(1).split('/');
@@ -70,27 +144,41 @@ const utils = {
       behavior: 'smooth'
     });
   },
+  globe_change: function(i,a,b,c,d){
+    i.classList.add(a);
+    i.classList.remove(b,c);
+    i.title = d;
+  },
   is_online: function(i){
-    i.classList.add('green');
-    i.classList.remove('red');
-    i.title = 'online';
+    utils.globe_change(i,'green','red', 'orange','online')
     ss.set('is_online', true)
   },
   is_offline: function(i){
-    i.classList.add('red');
-    i.classList.remove('green');
-    i.title = 'offline';
+    utils.globe_change(i,'red','green', 'orange', 'offline')
     ss.set('is_online', true)
   },
   add_spn: function(item, text){
-    item.setAttribute('disabled', true);
-    utils.empty(item);
+    item.parentNode.setAttribute('disabled', true);
+    utils.emptySync(item);
     item.append(h('span.spinner-grow.spinner-grow-sm.mr-1'), text);
   },
   remove_spn: function(item, text){
-    item.removeAttribute('disabled');
-    utils.empty(item);
-    item.innerText = text;
+    setTimeout(function(){
+      item.parentNode.removeAttribute('disabled');
+      utils.emptySync(item);
+      item.innerText = text;
+    },1000)
+  },
+  add_sp: function(item, text, cb){
+    utils.emptySync(item);
+    item.append(h('span.spinner-grow.spinner-grow-sm.mr-1'), text);
+    cb()
+  },
+  remove_sp: function(item, text){
+    setTimeout(function(){
+      utils.emptySync(item);
+      item.innerText = text;
+    },1000)
   },
   toast: function(i, msg){
     const toast = h('div#toast.alert.alert-'+ i, {
@@ -114,6 +202,25 @@ const utils = {
       }
     }
     return false
+  },
+  date2ts: function(x){
+    return Date.parse(x);
+  },
+  format_date: function(i){
+    let date = new Date(i),
+    dd = date.getDate(),
+    mm = date.getMonth()+1,
+    yyyy = date.getFullYear();
+
+    if(dd < 10){
+      dd = '0' + dd
+    }
+
+    if(mm < 10){
+      mm = '0' + mm
+    };
+
+    return [yyyy, mm, dd].join('-')
   },
   get_year: function(){
     let d = new Date();
@@ -163,6 +270,28 @@ const utils = {
       cb(err)
     })
   },
+  getJSON: function(url, cb){
+    fetch(url, {
+      method: 'GET',
+      headers: headers.json
+    })
+    .then(function(res){
+      if (res.status >= 200 && res.status < 300) {
+        return res.json();
+      } else {
+        return Promise.reject(new Error(res.statusText))
+      }
+    })
+    .then(function(data) {
+      if(data.status === 'ok'){
+        data = data.data;
+      }
+      cb(false, data)
+    })
+    .catch(function(err){
+      cb(err)
+    })
+  },
   fetch_subs: function(url, cb){
     fetch(url, {
       method: 'GET',
@@ -186,23 +315,262 @@ const utils = {
     })
   },
   quick_search: function(term){
-    term = encodeURIComponent(term);
-    utils.fetch(config.base_url + 'list_movies.json?limit=5&query_term='+term, function(err,res){
-      if(err){return ce(err)}
-      let evt = new CustomEvent('quick_search', {
-        detail: res.movies
+    term = term.toLowerCase()
+    let res = movie_db.filter(function(x){
+
+      return x.title.toLowerCase().includes(term)
+    }).slice(0,5).value();
+
+
+    window.dispatchEvent(
+      new CustomEvent('quick_search', {
+        detail: res
       })
-      window.dispatchEvent(evt);
-    })
+    );
+
   },
-  build_search_url: function(obj){
-    let s_url = '';
-    for (let key in obj) {
-      if(obj[key] !== 'all'){
-        s_url += '&'+key+'='+obj[key]
+  formatBytes: function(bytes, decimals) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  },
+  imdb_spec: function(id, cb){
+
+      fetch('https://m.imdb.com/title/'+ id, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'text/html',
+          'Accept-Encoding': 'gzip',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-mode': 'cors',
+          'Sec-Fetch-Site': 'cross-site'
+        }
+      })
+      .then(function(res){
+        if (res.status >= 200 && res.status < 300) {
+          return res.text();
+        } else {
+          return Promise.reject(new Error(res.statusText))
+        }
+      })
+      .then(function(res) {
+        let obj = {};
+        let start = '<script type="application/ld+json">',
+        end = '</script>';
+
+        let c_start ='<h3>Country of Origin</h3>',
+        g_start ='<h3>Cumulative Worldwide Gross:</h3>',
+        m_start = '<span class="metascore ',
+        p_end = '</p>',
+        sp_end = '</span>';
+
+        let txt = JSON.parse(res.split(start)[1].split(end)[0]);
+
+        obj.metascore = (function(){
+          try {
+            return res.split(m_start)[1].split(sp_end)[0].split('>')[1].trim();
+          } catch (err) {
+            return 'N/A';
+          }
+        })()
+        obj.gross = (function(){
+          try {
+            return res.split(g_start)[1].split(p_end)[0].replace('<p>', '').trim();
+          } catch (err) {
+            return 'N/A';
+          }
+        })();
+        obj.mpa_rating = txt.contentRating || 'N/A'
+        if(txt.creator){
+          if(Array.isArray(txt.creator)){
+            if(txt.creator[0].name){
+              obj.writter = txt.creator[0].name
+            } else {
+              obj.writter = ''
+            }
+          } else if (!txt.creator.name) {
+            obj.writter = ''
+          } else {
+            obj.writter = txt.creator.name
+          }
+        } else {
+          obj.writter = ''
+        }
+
+        if(txt.director){
+          if(Array.isArray(txt.director)){
+            obj.director = txt.director[0].name
+          } else if (!txt.director.name) {
+            obj.director = ''
+          } else {
+            obj.director = txt.director.name
+          }
+        } else {
+          obj.director = ''
+        }
+
+        if(txt.aggregateRating && txt.aggregateRating.ratingCount){
+          obj.votes = txt.aggregateRating.ratingCount;
+          obj.rating = parseFloat(txt.aggregateRating.ratingValue);
+        } else {
+          obj.votes = 0;
+          obj.rating = 0
+        }
+
+        obj.published = txt.datePublished|| 'N/A';
+
+        cb(false, obj)
+
+      })
+      .catch(function(err){
+        cl(err)
+        cb(true)
+      })
+  },
+  rt_spec: function(ttl, cb){
+
+    let api_url = 'https://www.rottentomatoes.com/api/private/v2.0/search?limit=1&q=' + ttl.split(' ').join('+');
+
+    fetch(api_url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept-Encoding': 'gzip',
+        'Sec-Fetch-Dest': 'object',
+        'Sec-Fetch-mode': 'cors',
+        'Sec-Fetch-Site': 'cross-site'
+      }
+    })
+    .then(function(res){
+      if (res.status >= 200 && res.status < 300) {
+        return res.json();
+      } else {
+        return Promise.reject(new Error(res.statusText))
+      }
+    })
+    .then(function(data) {
+      if(data.movies && data.movies.length > 0){
+        data = data.movies[0];
+      } else{
+        return cb(true)
+      }
+
+      fetch("https://www.rottentomatoes.com"+ data.url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'text/html',
+          'Accept-Encoding': 'gzip',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-mode': 'cors',
+          'Sec-Fetch-Site': 'cross-site'
+        }
+      })
+      .then(function(res){
+        if (res.status >= 200 && res.status < 300) {
+          return res.text();
+        } else {
+          return Promise.reject(new Error(res.statusText))
+        }
+      })
+      .then(function(txt) {
+        let obj = {},
+        start = '<span class="mop-ratings-wrap__percentage">',
+        end = '</span>',
+        cnt = 0,
+        score;
+        try {
+          obj.rt_percent = txt.split(start)[1].split(end)[0].trim();
+        } catch (err) {
+          cnt++
+          obj.rt_percent = 'N/A';
+        }
+        try {
+          obj.rt_audience = txt.split(start)[2].split(end)[0].trim();
+        } catch (err) {
+          cnt++
+          obj.rt_audience = 'N/A'
+        }
+
+        if(cnt === 2){
+          return cb(true)
+        }
+
+        cb(false, obj)
+      })
+      .catch(function(err){
+        cb(true)
+      })
+
+    })
+    .catch(function(err){
+      cb(true)
+    })
+
+  },
+  snake_case: function(str){
+    try {
+      return str.replace(/ /g, '_');
+    } catch (err) {
+      if(err){return str;}
+    }
+  },
+  staff_db: function(cb){
+
+    let x = movie_db.value(),
+    staff_db = {
+      actors: [],
+      directors: [],
+      writters: []
+    };
+
+    for (let i = 0; i < x.length; i++) {
+      for (let j = 0; j < x[i].cast.length; j++) {
+        if(staff_db.actors.indexOf(x[i].cast[j].name) === -1){
+          staff_db.actors.push(x[i].cast[j].name)
+        }
+      }
+
+      if(staff_db.directors.indexOf(x[i].director) === -1){
+        staff_db.directors.push(x[i].director)
+      }
+
+      if(staff_db.writters.indexOf(x[i].writter) === -1){
+        staff_db.writters.push(x[i].writter)
       }
     }
-    return s_url
+
+    staff_db.actors = staff_db.actors.sort();
+    staff_db.directors = staff_db.directors.sort();
+    staff_db.writters = staff_db.writters.sort();
+
+    fs.writeFile(base_dir +'/app/db/staff_db.json', js(staff_db), function(err){
+      if(err){return cb('failed to update staff_db')}
+      cb(false)
+    })
+  },
+  scrap_movie: function(cnt, hash_arr, cb){
+    scrap.mov(config.trackers[cnt], hash_arr, function(err,res){
+      if(err){
+        cl(err)
+        return cb(true)
+      }
+      if(res && !res[0].infoHash && res.length === 5){
+        res = [{
+          infoHash: res[1],
+          complete: res[2],
+          downloaded: res[3],
+          incomplete: res[4]
+        }]
+      }
+      cl(res)
+      cb(false, res)
+    })
   }
 }
 

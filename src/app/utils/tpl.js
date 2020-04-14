@@ -1,15 +1,21 @@
 const config = require('../config'),
+fs = require('fs'),
 h = require('./h'),
+_ = require('lodash'),
+request = require('request'),
+urls = require('./urls'),
 rout = require('./rout'),
 {ls,ss} = require('./storage'),
-lightbox = require('./lightbox');
+lightbox = require('./lightbox'),
+sp = require('../db/staff_popular');
 
+let cnt = 0;
 const tpl = {
   header: function(){
     return h('nav.navbar.navbar-expand-lg.nav_main.fixed-top',
       h('div.navbar-brand',
         h('img.nav_logo',{
-          src:'./static/img/logo.svg'
+          src:config.settings.logo
         })
       ),
       h('div.w-100',
@@ -28,6 +34,16 @@ const tpl = {
         )
       )
     )
+  },
+  lbox: function(){
+    let img = h('img')
+    return h('a#lb_lg.lightbox.hidden',{
+      onclick: function(evt){
+        evt.target.classList.add('hidden');
+        img.src = '';
+      }
+    },img)
+
   },
   footer: function(){
     const copyright = config.settings.copyright_msg.replace('{{year}}', utils.get_year());
@@ -67,6 +83,7 @@ const tpl = {
   status_bar: function(){
 
     let online_globe = h('div.globe.mr-2'),
+    db_globe = online_globe.cloneNode(),
     sb = h('div.container-fluid.status-bar',
       h('div.row',
         h('div.col-6',
@@ -76,6 +93,7 @@ const tpl = {
         ),
         h('div.col-6',
           h('div.status-right',
+            db_globe,
             online_globe
           )
         )
@@ -89,6 +107,8 @@ const tpl = {
       utils.is_offline(online_globe);
     }
 
+    utils.globe_change(db_globe,'orange','green','red','db updating...');
+
     window.addEventListener('online',  function(){
       utils.is_online(online_globe);
     })
@@ -96,6 +116,19 @@ const tpl = {
     window.addEventListener('offline',  function(){
       utils.is_offline(online_globe);
     })
+
+
+    window.addEventListener('db-status',  function(evt){
+      evt = evt.detail;
+      if(evt === 1){
+        utils.globe_change(db_globe,'green','red','orange','db up to date');
+      } else if (evt === 2) {
+        utils.globe_change(db_globe,'orange','green','red','db updating...');
+      } else if (evt === 3){
+        utils.globe_change(db_globe,'red','green','orange','db out of date');
+      }
+    })
+
 
     return sb;
 
@@ -121,7 +154,7 @@ const tpl = {
       }
       dest = dest.split('/');
       for (let i = 0; i < dest.length; i++) {
-        dest[i] = utils.capitalize(dest[i]);
+        dest[i] = decodeURIComponent(utils.capitalize(dest[i]));
       }
       dest = dest.join(' / ')
       bc_active.innerText = dest
@@ -134,7 +167,7 @@ const tpl = {
     let sb_body = h('div.sb-body',
       h('div.sb-head',
         h('img.nav_logo',{
-          src:'./static/img/logo.svg'
+          src:config.settings.logo
         })
       )
     ),
@@ -183,6 +216,9 @@ const tpl = {
       })
     },false)
 
+
+
+
     setTimeout(function(){
       loader.classList.add('fadeout')
       setTimeout(function(){
@@ -193,9 +229,6 @@ const tpl = {
     return h('app-main',
       tpl.header(),
       tpl.side_bar(),
-      h('div#main-content.container-fluid',
-        h('div#app-main')
-      ),
       h('div.sub-content',
         h('div#myModal.lb-modal.hidden',
           h('span.lb-close.icon-times-circle', {
@@ -205,16 +238,34 @@ const tpl = {
           }),
           h('div#lb-main.container-fluid')
         ),
+        tpl.lbox(),
         quick_search,
         loader,
-        tpl.to_top(),
-        tpl.status_bar()
+        function(){
+          if(config.settings.to_top){
+            return tpl.to_top()
+          }
+        },
+        function(){
+          if(config.settings.status_bar){
+            return tpl.status_bar()
+          }
+        }
+      ),
+      h('div#main-content.container-fluid',
+        h('div#app-main')
       )
     )
   },
   item_post: function(obj){
     let genre = h('div'),
-    b_img = './static/img/bg_med.png';
+    b_img = urls.bg_med,
+    c_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/'),
+    m_img = h('img.img-fluid',{
+      alt: obj.title,
+      width: 210,
+      height: 315
+    })
     if(obj.genres){
       for (let i = 0; i < 2; i++) {
         if(obj.genres[i]){
@@ -222,42 +273,124 @@ const tpl = {
         }
       }
     }
-    return h('div.browse-movie-wrap.col-xs-12.col-sm-6.col-md-3.text-center',
-      h('div.browse-movie-link',
-        h('figure',
-          h('img.img-fluid',{
-            src: obj.medium_cover_image || b_img,
-            alt: obj.title,
-            width: 210,
-            height: 315,
-            onerror: function(evt){
-              evt.target.src = b_img;
-            }
-          })
+
+    if(config.settings.img_cache){
+      if(img_cache.value().indexOf(obj.img) === -1){
+        m_img.src = c_img;
+        m_img.onload = function(ele){
+          utils.cache_img(c_img)
+        }
+      } else {
+        m_img.src = urls.cache_jpg.replace('{{id}}', obj.img);
+      }
+      m_img.onerror = function(evt){
+        evt.target.src = b_img;
+      }
+    } else {
+      m_img.src = c_img;
+    }
+
+
+    return h('div.col-xs-12.col-sm-6.col-md-3.text-center',
+      h('div.browse-movie-wrap',
+        h('div.browse-movie-link',
+          h('figure',
+            m_img
+          ),
+          h('figcaption.hidden-xs.hidden-sm',
+            h('span.icon-star'),
+            h('h4.rating', obj.rating +' / 10'),
+            genre,
+            h('button.btn.btn-outline-success', {
+              type: 'button',
+              onclick: function(){
+                location.hash = 'movie/'+ obj.id
+              }
+            }, 'View Details')
+          )
         ),
-        h('figcaption.hidden-xs.hidden-sm',
-          h('span.icon-star'),
-          h('h4.rating', obj.rating +' / 10'),
-          genre,
-          h('button.btn.btn-outline-success', {
-            type: 'button',
-            onclick: function(){
-              location.hash = 'movie/'+ obj.id
-            }
-          }, 'View Details')
+        h('div.browse-movie-bottom',
+          h('h5.browse-movie-title', obj.title),
+          h('div.browse-movie-year', obj.year)
         )
-      ),
-      h('div.browse-movie-bottom',
-        h('h5.browse-movie-title', obj.title),
-        h('div.browse-movie-year', obj.year)
+      )
+    )
+
+  },
+  item_glide: function(obj){
+    let genre = h('div'),
+    b_img = urls.bg_med,
+    c_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/'),
+    m_img = h('img.img-fluid',{
+      alt: obj.title,
+      width: 210,
+      height: 315
+    })
+    if(obj.genres){
+      for (let i = 0; i < 2; i++) {
+        if(obj.genres[i]){
+          genre.append(h('h4', obj.genres[i]))
+        }
+      }
+    }
+
+    if(config.settings.img_cache){
+      if(img_cache.value().indexOf(obj.img) === -1){
+        m_img.src = c_img;
+        m_img.onload = function(ele){
+          utils.cache_img(c_img)
+        }
+      } else {
+        m_img.src = urls.cache_jpg.replace('{{id}}', obj.img);
+      }
+      m_img.onerror = function(evt){
+        evt.target.src = b_img;
+      }
+    } else {
+      m_img.src = c_img;
+    }
+
+
+    return h('div.glide__slide.text-center',
+      h('div.browse-movie-wrap',
+        h('div.browse-movie-link',
+          h('figure',
+            m_img
+          ),
+          h('figcaption.hidden-xs.hidden-sm',
+            h('span.icon-star'),
+            h('h4.rating', obj.rating +' / 10'),
+            genre,
+            h('button.btn.btn-outline-success', {
+              type: 'button',
+              onclick: function(){
+                location.hash = 'movie/'+ obj.id
+              }
+            }, 'View Details')
+          )
+        ),
+        h('div.browse-movie-bottom',
+          h('h5.browse-movie-title', obj.title),
+          h('div.browse-movie-year', obj.year)
+        )
       )
     )
 
   },
   item_sel: function(obj, sel){
     let genre = h('div'),
-    b_img = './static/img/bg_med.png',
+    b_img = urls.bg_med,
+    c_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/'),
+    m_img = h('img.img-fluid',{
+      alt: obj.title,
+      width: 210,
+      height: 315,
+      onerror: function(evt){
+        evt.target.src = b_img;
+      }
+    }),
     item;
+
     if(obj.genres){
       for (let i = 0; i < 2; i++) {
         if(obj.genres[i]){
@@ -265,83 +398,177 @@ const tpl = {
         }
       }
     }
-    item = h('div.browse-movie-wrap.col-xs-12.col-sm-6.col-md-3.text-center',
-      h('div.browse-movie-link',
-        h('figure',
-          h('img.img-fluid',{
-            src: obj.medium_cover_image || b_img,
-            alt: obj.title,
-            width: 210,
-            height: 315,
-            onerror: function(evt){
-              evt.target.src = b_img;
-            }
-          })
-        ),
-        h('figcaption.hidden-xs.hidden-sm',
-          h('span.icon-star'),
-          h('h4.rating', obj.rating +' / 10'),
-          genre,
-          h('button.btn.btn-outline-success.flx-btn', {
-            type: 'button',
-            onclick: function(){
-              location.hash = 'movie/'+ obj.id
-            }
-          }, 'View Details'),
-          h('button.btn.btn-outline-danger', {
-            type: 'button',
-            onclick: function(){
-              if(sel === 'history'){
-                his_db.remove(obj).write();
-              } else {
-                save_db.remove(obj).write();
+
+    if(config.settings.img_cache){
+      if(img_cache.value().indexOf(obj.img) === -1){
+        m_img.src = c_img;
+        m_img.onload = function(ele){
+          utils.cache_img(c_img)
+        }
+      } else {
+        m_img.src = urls.cache_jpg.replace('{{id}}', obj.img);
+      }
+    } else {
+      m_img.src = c_img;
+    }
+
+    item = h('div.col-xs-12.col-sm-6.col-md-3.text-center',
+      h('div.browse-movie-wrap',
+        h('div.browse-movie-link',
+          h('figure',
+            m_img
+          ),
+          h('figcaption.hidden-xs.hidden-sm',
+            h('span.icon-star'),
+            h('h4.rating', obj.rating +' / 10'),
+            genre,
+            h('button.btn.btn-outline-success.flx-btn', {
+              type: 'button',
+              onclick: function(){
+                location.hash = 'movie/'+ obj.id
               }
-              item.remove();
-              utils.toast('success', 'item removed from '+ sel +' db');
-            }
-          }, 'Delete')
+            }, 'View Details'),
+            h('button.btn.btn-outline-danger', {
+              type: 'button',
+              onclick: function(){
+                if(sel === 'history'){
+                  his_db.remove(obj).write();
+                } else {
+                  save_db.remove(obj).write();
+                }
+                item.remove();
+                utils.toast('success', 'item removed from '+ sel +' db');
+              }
+            }, 'Delete')
+          )
+        ),
+        h('div.browse-movie-bottom',
+          h('h5.browse-movie-title', obj.title),
+          h('div.browse-movie-year', obj.year)
         )
-      ),
-      h('div.browse-movie-bottom',
-        h('h5.browse-movie-title', obj.title),
-        h('div.browse-movie-year', obj.year)
       )
     )
     return item;
   },
-  item_suggest: function(obj){
-    let b_img = './static/img/bg_med.png';
+  item_suggest: function(id){
+    let obj = movie_db.find({id: id}).value();
+    if(!obj){
+      return h('span')
+    }
+    let b_img = urls.bg_med,
+    c_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/'),
+    m_img = h('img.img-fluid',{
+      alt: obj.title,
+      title: obj.title +' ('+ obj.year +')',
+      onclick: function(){
+        location.hash = 'movie/'+ obj.id
+      },
+      onerror: function(evt){
+        evt.target.src = b_img;
+      }
+    })
+
+    if(config.settings.img_cache){
+      if(img_cache.value().indexOf(obj.img) === -1){
+        m_img.src = c_img;
+        m_img.onload = function(ele){
+          utils.cache_img(c_img)
+        }
+      } else {
+        m_img.src = urls.cache_jpg.replace('{{id}}', obj.img);
+      }
+    } else {
+      m_img.src = c_img;
+    }
+
     return h('div.col-6.text-center',
       h('div.browse-movie-link.bc-hov.mb-4.cp',
-        h('img.img-fluid',{
-          src: obj.medium_cover_image || b_img,
-          alt: obj.title_long,
-          title: obj.title_long,
-          onclick: function(){
-            location.hash = 'movie/'+ obj.id
-          },
-          onerror: function(evt){
-            evt.target.src = b_img;
-          }
-        })
+        m_img
       )
+    );
+
+  },
+  ico_col: function(title,ico,data){
+    return h('div.col-3.mb-2', {title: title},
+      h('i.icon-'+ ico +'.mr-2.mb-2.text-success'),
+      data || 'N/A'
     )
   },
   item_page: function(obj){
-    cl(obj)
+
     let lb_arr = [],
-    rev_div = h('div'),
-    b_img = './static/img/bg_lg.png',
+    hash_arr = [],
+    scrap_cnt = 0,
+    c_div = h('div'),
+    rev_div = c_div.cloneNode(),
+    b_img = urls.bg_lg,
+    m_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/'),
     sub_div = h('div.list-group'),
-    tr_div = h('div.trailer-div.hidden.mt-4', tpl.yt_trailer(obj.yt_trailer_code));
+    syn = h('div.card', h('div.card-body', obj.synopsis)),
+    tr_div = h('div.trailer-div.hidden.mt-4',
+      tpl.yt_trailer(obj.yt_trailer_code)
+    ),
+    ico_row = h('div.row',
+      tpl.ico_col('IMDB rating', 'imdb', obj.rating),
+      tpl.ico_col('IMDB votes', 'comments', obj.votes),
+      tpl.ico_col('Runtime', 'clock', obj.runtime +'min'),
+      tpl.ico_col('MPA rating', 'eye', obj.mpa_rating),
+      tpl.ico_col('Metacritic rating', 'metacritic', obj.metascore),
+      tpl.ico_col('Cumulative Gross', 'dollar', obj.gross),
+      tpl.ico_col('Upload date', 'cloud-upload-alt', utils.format_date(obj.date_uploaded)),
+      tpl.ico_col('Release date', 'calendar', obj.published),
+      tpl.ico_col('Language', 'language', obj.language)
+    ),
+    torrent_spec = h('div',
+      h('h4.text-success', 'Fetching torrent specs...',
+        h('span.spinner-grow.spinner-grow-sm.ml-2.sp-lg.float-right')
+      )
+    );
+
+    if(img_cache.value().indexOf(obj.img) !== -1){
+      m_img = urls.cache_jpg.replace('{{id}}', obj.img);
+    }
+
+    if(!obj.rt_percent && !obj.rt_audience){
+      utils.rt_spec(obj.title, function(err,res){
+        if(err){return cl(err)}
+        ico_row.append(
+          h('div.col-3.mb-2', {
+            title: 'rottentomatoes rating'
+          },h('i.icon-rt_alt.mr-2.mb-2.text-success'), res.rt_percent || 'N/A'),
+          h('div.col-3.mb-2', {
+            title: 'rottentomatoes audience rating'
+          },h('i.icon-rt.mr-2.mb-2.text-success'), res.rt_audience || 'N/A')
+        )
+        obj.rt_percent = res.rt_percent || 'N/A';
+        obj.rt_audience = res.rt_audience || 'N/A';
+        movie_db.find({id: obj.id}).set(obj).write();
+      })
+    } else {
+      cl('rt ratings found!')
+      ico_row.append(
+        h('div.col-3.mb-2', {
+          title: 'rottentomatoes rating'
+        },h('i.icon-rt_alt.mr-2.mb-2.text-success'), obj.rt_percent || 'N/A'),
+        h('div.col-3.mb-2', {
+          title: 'rottentomatoes audience rating'
+        },h('i.icon-rt.mr-2.mb-2.text-success'), obj.rt_audience || 'N/A')
+      )
+    }
+
 
     let item = h('div.row',
       h('div.col-sm-12.col-md-4.text-center',
-        h('img.img-fluid', {
-          src: obj.large_cover_image || b_img,
-          alt: obj.title_long,
+        h('img.img-fluid.lg-img.cp', {
+          src: m_img || b_img,
+          alt: obj.title,
           onerror: function(evt){
             evt.target.src = b_img;
+          },
+          onclick: function(){
+            let lbox = document.getElementById('lb_lg');
+            lbox.firstChild.src = [config.yts_url, urls.img, [obj.img, urls.cover_l].join('/')].join('/')
+            lbox.classList.remove('hidden');
           }
         }),
         tr_div,
@@ -356,8 +583,9 @@ const tpl = {
         h('h4.mb-4', 'Suggested movies'),
         function(){
           let item_row = h('div.row');
-          for (let i = 0; i < obj.suggestions.length; i++) {
-            item_row.append(tpl.item_suggest(obj.suggestions[i]))
+
+          for (let i = 0; i < obj.suggest.length; i++) {
+            item_row.append(tpl.item_suggest(obj.suggest[i]))
           }
           return item_row;
         }
@@ -370,10 +598,17 @@ const tpl = {
               window.history.back()
             }
           }, h('i.mr-2.icon-chevron-left'), 'Back'),
+          h('button.btn.btn-outline-success.ml-2',{
+            type: 'button',
+            onclick: function(){
+              window.dispatchEvent(new Event('hashchange'));
+            }
+          }, h('i.mr-2.icon-redo-alt'), 'Refresh'),
           h('button.btn.btn-outline-success.float-right',{
             type: 'button',
             onclick: function(){
               let db_item = save_db.find({id: obj.id}).value();
+              utils.add_spn(this.lastChild, 'Saving...')
 
               if(!db_item){
                 save_db.unshift(obj).write();
@@ -382,22 +617,35 @@ const tpl = {
                   save_db.pop().write();
                 }
 
-                return utils.toast('info', 'item saved to db');
+                utils.toast('info', 'item saved to db');
 
               } else {
-                return utils.toast('info', 'item already saved in db');
+                utils.toast('info', 'item already saved in db');
               }
+              return utils.remove_spn(this.lastChild, 'Save')
 
             }
-          }, h('i.mr-2.icon-star'), 'Save')
+          }, h('i.mr-2.icon-star'), h('span','Save'))
         ),
-        h('h3', obj.title_long),
+        h('h3', obj.title + ' (' + obj.year + ')'),
         function(){
           let genres = h('h4.mb3');
           for (let i = 0; i < obj.genres.length; i++) {
             genres.append(h('span.text-success.genre-lnk.sh-9', {
               onclick: function(){
-                ss.set('search_url', '&genre='+ encodeURIComponent(obj.genres[i]))
+                yts_db.set(
+                  'search',
+                  movie_db.filter(function(o){
+                    let item = o.genres;
+                    if(item.indexOf(obj.genres[i]) !== -1){
+                      return o;
+                    }
+                  })
+                  .orderBy(['rating'], ['desc'])
+                  .chunk(20).value()
+                ).write();
+                ss.set('pag-current', 1);
+                ss.set('search_url', ['genre', obj.genres[i]])
                 location.hash = 'search/'+ obj.genres[i]
               }
             },obj.genres[i]))
@@ -407,90 +655,96 @@ const tpl = {
           }
           return genres;
         },
-        h('h5.mb-4',
-          h('span.mr-4', {
-            title: 'like count'
-          }, h('i.icon-heart.mr-2.mb-2.text-success'), obj.like_count),
-          h('span.mr-4', {
-            title: 'imdb rating'
-          },h('i.icon-imdb.mr-2.mb-2.text-success'), obj.rating),
-          h('span.mr-4', {
-            title: 'download count'
-          },h('i.icon-download.mr-2.mb-2.text-success'), obj.download_count),
-          h('span.mr-4', {
-            title: 'Runtime'
-          },h('i.icon-clock.mr-2.mb-2.text-success'), obj.runtime +'min'),
-          h('span.mr-4', {
-            title: 'MPA rating'
-          },h('i.icon-eye.mr-2.mb-2.text-success'), obj.mpa_rating),
-          h('span.mr-4', {
-            title: 'upload date'
-          },h('i.icon-cloud-upload-alt.mr-2.mb-2.text-success'), obj.date_uploaded.split(' ')[0]),
-          h('span.mr-4', {
-            title: 'Language'
-          },h('i.icon-language.mr-2.mb-2.text-success'), obj.language)
-        ),
+        h('hr'),
+        ico_row,
         h('hr'),
         h('h6.text-success.w-100.mt-2', h('span.icon-cloud-download-alt.mr-2'),  'Torrent'),
         function(){
-          let lnks = h('div');
+          let lnks = c_div.cloneNode();
           for (let i = 0; i < obj.torrents.length; i++) {
-            lnks.append(h('a.btn.btn-outline-success.mr-2.mb-2.sh-95', {
-              href: obj.torrents[i].url,
+            hash_arr.push(obj.torrents[i].hash)
+            let txt = [obj.torrents[i].quality, obj.torrents[i].type].join(' ');
+            lnks.append(h('button.btn.btn-outline-success.mr-2.mb-2.sh-95', {
+              target: '_blank',
+              onclick: function(evt){
+                let $this = this;
+                cl(evt)
+                utils.add_spn($this.lastChild, 'Downloading...');
+                window.location = [config.yts_url, urls.torrent, obj.torrents[i].hash].join('/');
+                setTimeout(function(){
+                  utils.remove_spn($this.lastChild, txt)
+                },1000)
+              },
               title: [
                 'size: '+ obj.torrents[i].size,
                 'peers: '+ obj.torrents[i].peers,
                 'seeds: '+ obj.torrents[i].seeds,
               ].join(' / '),
               rel: 'nofollow'
-            }, [obj.torrents[i].quality, obj.torrents[i].type].join(' ')))
+            }, h('span', txt)))
           }
           return lnks;
         },
         h('h6.text-success.w-100.mt-2', h('span.icon-magnet.mr-2'), 'Magnet'),
         function(){
-          let lnks = h('div'),
-          mag;
+          let lnks = c_div.cloneNode();
 
           for (let i = 0; i < obj.torrents.length; i++) {
-            mag = 'magnet:?xt=urn:btih:'+ obj.torrents[i].hash +
+            let mag = 'magnet:?xt=urn:btih:'+ obj.torrents[i].hash +
             '&dn='+ encodeURIComponent(obj.title_long) +
-            '&tr=' + config.trackers.join('&tr=');
-
-            lnks.append(h('a.btn.btn-outline-success.mr-2.sh-95', {
+            '&tr=' + config.trackers.join('&tr='),
+            txt = [obj.torrents[i].quality, obj.torrents[i].type].join(' ');
+            lnks.append(h('button.btn.btn-outline-success.mr-2.sh-95', {
+              target: '_blank',
               href: mag,
+              onclick: function(evt){
+                let $this = this;
+                cl(evt)
+                utils.add_spn($this.lastChild, 'linking...');
+                window.location = mag;
+                setTimeout(function(){
+                  utils.remove_spn($this.lastChild, txt)
+                },1000)
+              },
               title: [
                 'size: '+ obj.torrents[i].size,
                 'peers: '+ obj.torrents[i].peers,
                 'seeds: '+ obj.torrents[i].seeds,
               ].join(' / '),
               rel: 'nofollow'
-            }, [obj.torrents[i].quality, obj.torrents[i].type].join(' ')))
+            }, h('span', txt)))
           }
           return lnks;
         },
         h('hr.mb-4'),
+        torrent_spec,
+        h('hr.mb-4'),
         function(){
-          b_img = './static/img/bg_sm.png';
-          let img_row = h('div.row');
+          b_img = urls.bg_sm;
+          let img_row = h('div.row'),
+          sc_img = obj.img,
+          d_img, l_img;
           for (let i = 1; i < 4; i++) {
-            if(obj['medium_screenshot_image'+ i]){
-              lb_arr.push(obj['large_screenshot_image'+ i]);
-              img_row.append(
-                h('div.col',
-                  h('img.img-fluid.cp',{
-                    src: obj['medium_screenshot_image'+ i] || b_img,
-                    onclick: function(){
-                      lightbox.open();
-                      lightbox.currentSlide(i);
-                    },
-                    onerror: function(evt){
-                      evt.target.src = b_img;
-                    }
-                  })
-                )
+
+            d_img = sc_img + '/medium-screenshot'+ i +'.jpg';
+            l_img = sc_img + '/large-screenshot'+ i +'.jpg';
+
+            lb_arr.push([config.yts_url, urls.img, l_img].join('/'));
+            img_row.append(
+              h('div.col',
+                h('img.img-fluid.cp',{
+                  src: [config.yts_url, urls.img, d_img].join('/'),
+                  onclick: function(){
+                    lightbox.open();
+                    lightbox.currentSlide(i);
+                  },
+                  onerror: function(evt){
+                    evt.target.src = b_img;
+                  }
+                })
               )
-            }
+            )
+
           }
           return img_row;
         },
@@ -507,45 +761,182 @@ const tpl = {
             return h('p.col', 'no cast data available.');
           }
         },
+        h('div.row',
+          h('div.col-md-6',
+            h('h6.mt-4', 'Director:',
+              h('em.text-success.cp.sh-95.position-absolute.ml-2', {
+                onclick: function(){
+                  yts_db.set(
+                    'search',
+                    movie_db.filter(function(o){
+                      if(o.director === obj.director){
+                        return o;
+                      }
+                    })
+                    .orderBy(['rating'], ['desc'])
+                    .chunk(20).value()
+                  ).write();
+                  ss.set('pag-current', 1)
+
+                  location.hash = 'search/director/'+ obj.director
+                }
+              }, obj.director || 'N/A')
+            )
+          ),
+          h('div.col-md-6',
+            h('h6.mt-4', 'Writter:',
+              h('em.text-success.cp.sh-95.position-absolute.ml-2', {
+                onclick: function(){
+                  yts_db.set(
+                    'search',
+                    movie_db.filter(function(o){
+                      if(o.writter === obj.writter){
+                        return o;
+                      }
+                    })
+                    .orderBy(['rating'], ['desc'])
+                    .chunk(20).value()
+                  ).write();
+                  ss.set('pag-current', 1)
+
+                  location.hash = 'search/writter/'+ obj.writter
+                }
+              }, obj.writter || 'N/A')
+            )
+          )
+        ),
         h('hr.mt-4'),
-        h('h4.mt-4', 'Synopsis'),
-        h('p', obj.description_full),
+        h('h4.mt-4.container-fluid', 'Synopsis',
+          h('span.icon-eye.text-success.float-right.cp.sh-9', {
+            title: 'show subtitles',
+            onclick: function(evt){
+              syn.classList.toggle('hidden')
+            }
+          })
+        ),
+        syn,
         h('hr.mt-4'),
-        h('h4.mt-4', 'Subtitles'),
+        h('h4.mt-4.container-fluid', 'Subtitles',
+          h('span.icon-eye.text-success.float-right.cp.sh-9', {
+            title: 'show subtitles',
+            onclick: function(){
+              rev_div.classList.toggle('hidden')
+            }
+          })
+        ),
         rev_div
       )
     )
 
-    if(config.settings.subtitles){
-      utils.fetch_subs('https://www.yifysubtitles.com/movie-imdb/'+ obj.imdb_code, function(err,res){
-        if(err){return cl(err)}
-        let items = new DOMParser(),
-        arr = [],
-        ttl;
-        try {
-          items = items.parseFromString(res, "text/html");
-          items = items.querySelector('.other-subs > tbody').children;
 
-          for (let i = 0; i < items.length; i++) {
-            if(items[i].getElementsByClassName('sub-lang')[0].innerText.toLowerCase() === config.settings.subtitle_lang){
-              ttl = items[i].children[2].firstChild.href.split('/').pop();
-              sub_div.append(tpl.sub_item({
-                lang: config.settings.subtitle_lang,
-                rating: items[i].firstChild.firstChild.innerText,
-                title: ttl,
-                link: config.sub_url + ttl + '.zip'
-              }))
+    function scrap(x){
+
+      utils.scrap_movie(x,hash_arr,function(err,res){
+          if(err){
+            scrap_cnt++
+            if(scrap_cnt < config.trackers.length){
+              return scrap(scrap_cnt);
+            } else {
+              utils.emptySync(torrent_spec);
+              return torrent_spec.append(
+                h('h5', 'Torrent specs'),
+                h('h6', "All Trackers",
+                  h('span.text-danger.ml-2', 'failed')
+                )
+              )
             }
 
           }
-          return rev_div.append(sub_div);
-        } catch (err) {
-          if(err){
-            rev_div.append(h('p','Subtitles not found for this movie'));
-          }
-        }
 
-      })
+          let scrap_div = h('div',
+          h('h5', 'Torrent specs'),
+            h('h6.mb-4', "Tracker: "+ config.trackers[scrap_cnt],
+              h('span.text-success.ml-2', 'success')
+            )
+          );
+
+
+          for (let i = 0; i < res.length; i++) {
+            for (let j = 0; j < obj.torrents.length; j++) {
+
+              if(obj.torrents[j].hash.toUpperCase() === res[i].infoHash.toUpperCase()){
+                scrap_div.append(
+                  h('div.row',
+                    h('div.col-3',
+                      h('h6.text-success', [obj.torrents[j].quality, obj.torrents[j].type].join(' '))
+                    ),
+                    h('div.col-3',
+                      h('i.icon-download.mr-2.mb-2.text-success',{
+                        title: 'downloads'
+                      }),
+                      h('span.text-success', res[i].downloaded)
+                    ),
+                    h('div.col-3', 'seeds: ',
+                      h('span.text-success', res[i].complete)
+                    ),
+                    h('div.col-3', 'leechers: ',
+                      h('span.text-success', res[i].incomplete)
+                    )
+                  )
+                )
+              }
+            }
+          }
+          utils.emptySync(torrent_spec);
+          torrent_spec.append(scrap_div);
+        }
+      )
+    }
+    scrap(0);
+
+
+    if(config.settings.subtitles){
+      if(!config.settings.subs_cache || subs_cache.value().indexOf(obj.id) === -1){
+        utils.fetch_subs([config.sub_url, 'movie-imdb', obj.imdb_code].join('/'),
+        function(err,res){
+          if(err){return cl(err)}
+          let items = new DOMParser(),
+          arr = [],
+          subs_obj,ttl;
+          try {
+            items = items.parseFromString(res, "text/html");
+            items = items.querySelector('.other-subs > tbody').children;
+
+            for (let i = 0; i < items.length; i++) {
+              if(
+                items[i].getElementsByClassName('sub-lang')[0].innerText.toLowerCase() === config.settings.subtitle_lang
+              ){
+                ttl = items[i].children[2].firstChild.href.split('/').pop();
+                subs_obj = {
+                  lang: config.settings.subtitle_lang,
+                  rating: items[i].firstChild.firstChild.innerText,
+                  title: ttl,
+                  link: [config.sub_url, 'subtitle',  ttl + '.zip'].join('/')
+                }
+                sub_div.append(tpl.sub_item(subs_obj));
+                arr.push(subs_obj)
+              }
+            }
+            if(arr.length > 0){
+              fs.writeFileSync([base_dir, urls.subs, obj.id +'.json'].join('/'), JSON.stringify(arr))
+              subs_cache.push(obj.id).write();
+              cl('subs cached')
+            }
+            return rev_div.append(sub_div);
+          } catch (err) {
+            if(err){
+              rev_div.append(h('p','Subtitles not found for this movie'));
+            }
+          }
+        })
+      } else {
+        let items = JSON.parse(fs.readFileSync([base_dir, urls.subs, obj.id +'.json'].join('/'), 'utf8'));
+        for (let i = 0; i < items.length; i++) {
+          sub_div.append(tpl.sub_item(items[i]));
+        }
+        cl('subs loaded from cache')
+        rev_div.append(sub_div);
+      }
     } else {
       rev_div.append(h('p','Subtitles disabled'));
     }
@@ -555,19 +946,40 @@ const tpl = {
     return item;
   },
   cast_ico: function(obj){
-    let b_img = './static/img/bg_thumb.png';
+    let b_img = urls.bg_thumb,
+    c_img;
+    if(!obj.url_small_image){
+      c_img = b_img
+    } else {
+      c_img = [config.yts_url, urls.actors, obj.url_small_image].join('/')
+    }
     return h('div.col-md-3.col-sm-6',
-      h('div.media.border-success',
-        h('img.rounded.mr-2.mb-2',{
-          src: obj.url_small_image || b_img,
+      h('div.media',
+        h('img.rounded.mr-2.mb-2.img-thumbnail.border-success',{
+          src: c_img,
           onerror: function(evt){
             evt.target.src = b_img;
           }
         }),
         h('div.media-body',
-          h('h6.mt-0.cp.sh-95', {
+          h('h6.mt-0.cp.sh-95.text-success', {
             onclick: function(){
-              location.hash = 'search/character/'+ encodeURIComponent(obj.name)
+              yts_db.set(
+                'search',
+                movie_db.filter(function(o){
+                  let items = o.cast;
+                  for (let i = 0; i < items.length; i++) {
+                    if(items[i].name === obj.name){
+                      return o;
+                    }
+                  }
+                })
+                .orderBy(['rating'], ['desc'])
+                .chunk(20).value()
+              ).write();
+              ss.set('pag-current', 1)
+              ss.set('search_url', ['cast', obj.name])
+              location.hash = 'search/cast/'+ obj.name
             }
           }, obj.name),
           h('small', 'as '+ obj.character_name)
@@ -576,10 +988,11 @@ const tpl = {
     )
   },
   quick_item: function(obj){
-    let b_img = './static/img/bg_xs.png';
+    let b_img = urls.bg_xs,
+    s_img = [obj.img, urls.cover_s].join('/');
     return h('div.media.qs_item.cp',
       h('img.rounded.mr-2',{
-        src: obj.small_cover_image || b_img,
+        src: [config.yts_url, urls.img, s_img].join('/'),
         onerror: function(evt){
           evt.target.src = b_img;
         }
@@ -608,16 +1021,94 @@ const tpl = {
 
     for (let i = 1; i < config.search.genre.length; i++) {
       item.append(
-        h('button.btn.btn-outline-success.btn-sm.mr-2.mb-2',{
+        h('button.btn.btn-outline-success.btn-sm.fs-7.mr-2.mb-2.sh-95',{
           type: 'button',
           onclick: function(){
-            ss.set('search_url', '&genre='+ encodeURIComponent(config.search.genre[i]));
+            yts_db.set(
+              'search',
+              movie_db.filter(function(o){
+                let item = o.genres;
+                if(item.indexOf(config.search.genre[i]) !== -1){
+                  return o;
+                }
+              })
+              .orderBy(['rating'], ['desc'])
+              .chunk(20).value()
+            ).write();
+            ss.set('pag-current', 1)
+            ss.set('search_url', ['genre', config.search.genre[i]])
             location.hash = 'search/'+ config.search.genre[i];
           }
         }, config.search.genre[i])
       )
     }
-    return h('div.card.bg-dark.bd-dark',
+    return h('div.card.bg-dark.bd-dark.mb-4',
+      h('div.card-header.text-center', 'Genres'),
+      item
+    );
+  },
+  actor_cloud: function(){
+    let item = h('div.card-body.text-center'),
+    actors = _.shuffle(sp.cast).slice(0,20)
+
+    for (let i = 1; i < actors.length; i++) {
+      item.append(
+        h('button.btn.btn-outline-success.btn-sm.fs-7.mr-2.mb-2.sh-95',{
+          type: 'button',
+          onclick: function(){
+            yts_db.set(
+              'search',
+              movie_db.filter(function(o){
+                let items = o.cast;
+                for (let x = 0; x < items.length; x++) {
+                  if(items[x].name === actors[i].n){
+                    return o;
+                  }
+                }
+              })
+              .orderBy(['rating'], ['desc'])
+              .chunk(20).value()
+            ).write();
+            ss.set('pag-current', 1)
+            ss.set('search_url', ['cast', actors[i].n])
+            location.hash = 'search/cast/'+ actors[i].n
+          }
+        }, actors[i].n)
+      )
+    }
+    return h('div.card.bg-dark.bd-dark.mb-4',
+      h('div.card-header.text-center', 'Popular Actors'),
+      item
+    );
+  },
+  director_cloud: function(){
+    let item = h('div.card-body.text-center'),
+    directors = _.shuffle(sp.directors).slice(0,20)
+
+    for (let i = 1; i < directors.length; i++) {
+      item.append(
+        h('button.btn.btn-outline-success.btn-sm.fs-7.mr-2.mb-2.sh-95',{
+          type: 'button',
+          onclick: function(){
+            yts_db.set(
+              'search',
+              movie_db.filter(function(o){
+                if(o.director === directors[i]){
+                  return o;
+                }
+              })
+              .orderBy(['rating'], ['desc'])
+              .chunk(20).value()
+            ).write();
+            ss.set('pag-current', 1)
+            location.hash = 'search/director/'+ directors[i]
+            ss.set('search_url', ['director', directors[i]])
+          }
+        }, directors[i])
+      )
+    }
+    return h('div.card.bg-dark.bd-dark.mb-4',
+      h('div.card-header.text-center', 'Popular Directors'),
       item
     );
   },
@@ -625,7 +1116,7 @@ const tpl = {
     let item = h('iframe.tr-iframe',{
       frameBorder: 0,
       allow: 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture',
-      src: 'https://www.youtube.com/embed/'+ i
+      src: config.trailer_url.replace('{{id}}', i)
     })
 
     item.setAttribute('allowfullscreen', '');
@@ -637,12 +1128,77 @@ const tpl = {
       h('div.row',
         h('div.col-2', {title: 'rating'}, h('i.icon-star.mr-2.text-success'), obj.rating),
         h('div.col-2', {title: 'language'}, h('i.icon-language.mr-2.text-success'),obj.lang),
-        h('div.col-6', {title: 'title'},h('p', obj.title)),
+        h('div.col-6', {title: obj.title},h('p.text-truncate', obj.title)),
         h('div.col-2.text-right', h('a.icon-cloud-download-alt', {
           href: obj.link,
           title: 'download subtitle'
         }))
       )
+    )
+  },
+  show_all_btn: function(i){
+    return h('div.col-12.text-center',
+      h('button.btn.btn-outline-success.mt-2.mb-4.sh-95.w-50',{
+        type: 'button',
+        onclick: function(){
+          location.hash = i
+        }
+      }, 'Show All')
+    )
+  },
+  cast_btn: function(i){
+    return h('button.btn.btn-outline-success.btn-sm.fs-7.mr-2.mb-2.sh-95',{
+      type: 'button',
+      onclick: function(){
+        yts_db.set(
+          'search',
+          movie_db.filter(function(o){
+            let items = o.cast;
+            for (let x = 0; x < items.length; x++) {
+              if(items[x].name === i){
+                return o;
+              }
+            }
+          })
+          .orderBy(['rating'], ['desc'])
+          .chunk(20).value()
+        ).write();
+        ss.set('pag-current', 1)
+        ss.set('search_url', ['cast', i])
+        location.hash = 'search/cast/'+ i
+      }
+    }, i)
+  },
+  crew_btn: function(i,e){
+    return h('button.btn.btn-outline-success.btn-sm.fs-7.mr-2.mb-2.sh-95',{
+      type: 'button',
+      onclick: function(){
+        yts_db.set(
+          'search',
+          movie_db.filter(function(o){
+            if(o[e] === i){
+              return o;
+            }
+          })
+          .orderBy(['rating'], ['desc'])
+          .chunk(20).value()
+        ).write();
+        ss.set('pag-current', 1)
+        ss.set('search_url', [e, i])
+        location.hash = ['search', e, i].join('/')
+      }
+    }, i)
+  },
+  glide_arrow: function(){
+    return h('div.glide__arrows',{
+        'data-glide-el': 'controls'
+      },
+      h('button.glide__arrow.glide__arrow--left',{
+        'data-glide-dir': '<'
+      }, 'Prev'),
+      h('button.float-right.glide__arrow.glide__arrow--right',{
+        'data-glide-dir': '>'
+      }, 'Next')
     )
   }
 }
