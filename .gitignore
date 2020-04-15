@@ -16,7 +16,7 @@ src/app/cache/img/*.jpg
 src/app/cache/db/*.gz
 
 src/app/db/search_db.json
-src/app/db/db.json
+# src/app/db/db.json
 src/app/db/staff_db.bak.json
 src/app/db/news_db.bak.json
 src/app/db/yts_db.bak.json
