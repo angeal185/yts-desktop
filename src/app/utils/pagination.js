@@ -94,7 +94,6 @@ const pagination = {
           ss.set('pag-current', items);
           window.page_change();
 
-
         }
       },p_current + 4)
     )

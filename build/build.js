@@ -228,19 +228,19 @@ const build = {
     }
 
     for (let i = 0; i < actors.length; i++) {
-      if(s_db.actors.indexOf(actors[i]) === 1-){
+      if(s_db.actors.indexOf(actors[i]) === -1){
         s_db.actors.push(actors[i])
       }
     }
 
     for (let i = 0; i < directors.length; i++) {
-      if(s_db.directors.indexOf(directors[i]) === 1-){
+      if(s_db.directors.indexOf(directors[i]) === -1){
         s_db.directors.push(directors[i])
       }
     }
 
     for (let i = 0; i < writters.length; i++) {
-      if(s_db.writters.indexOf(writters[i]) === 1-){
+      if(s_db.writters.indexOf(writters[i]) === -1){
         s_db.writters.push(writters[i])
       }
     }
@@ -297,7 +297,6 @@ const build = {
 
   }
 }
-
 
 /*
 window.getdat = function(){

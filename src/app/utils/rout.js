@@ -90,26 +90,32 @@ const rout = {
       tpl.cat_cloud()
     )
 
-    new Glide('#recent_glide', config.glide).mount()
-    new Glide('#release_glide', config.glide).mount()
-    new Glide('#popular_glide', config.glide).mount()
+    _.forEach(['recent', 'release', 'popular'], function(i){
+      new Glide('#'+ i +'_glide', config.glide).mount()
+    })
+
+
+  },
+  news: function(dest){
+
+
 
   },
   recent: function(){
     ss.set('dest', 'search');
-    yts_db.set('search', movie_db.orderBy(['date_uploaded'], ['desc']).chunk(20).value()).write();
+    pag_db.set('search', movie_db.orderBy(['date_uploaded'], ['desc']).chunk(20).value()).write();
     ss.set('pag-current', 1)
     location.hash = 'search/recent';
   },
   release: function(){
     ss.set('dest', 'search');
     ss.set('pag-current', 1)
-    yts_db.set('search', movie_db.orderBy(['year'], ['desc']).chunk(20).value()).write();
+    pag_db.set('search', movie_db.orderBy(['year'], ['desc']).chunk(20).value()).write();
     location.hash = 'search/release';
   },
   popular: function(){
     ss.set('dest', 'search');
-    yts_db.set(
+    pag_db.set(
       'search',
       movie_db.orderBy(['rating'], ['desc']).chunk(20).value()
     ).write();
@@ -467,7 +473,7 @@ const rout = {
 
                 sdb = _.chunk(_.orderBy(sdb, [obj.sort_by], [obj.order_by]), obj.limit);
 
-                yts_db.set('search',sdb).write();
+                pag_db.set('search',sdb).write();
                 ss.set('pag-current', 1);
 
                 ss.set('search_url', ['search', 'advanced']);

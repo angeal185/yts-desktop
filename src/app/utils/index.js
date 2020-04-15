@@ -317,7 +317,6 @@ const utils = {
   quick_search: function(term){
     term = term.toLowerCase()
     let res = movie_db.filter(function(x){
-
       return x.title.toLowerCase().includes(term)
     }).slice(0,5).value();
 

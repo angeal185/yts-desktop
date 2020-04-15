@@ -25,6 +25,20 @@ const gz = {
       if(err){return cb(err)}
     }
   },
+  unzipDB: function(url, dest, cb){
+    try {
+      const i = zlib.createUnzip(config.gzip),
+      inp = fs.createReadStream(url),
+      out = fs.createWriteStream(dest);
+      inp.pipe(i).pipe(out);
+      fs.unlink(url, function(err){
+        if(err)throw err;
+        return cb(false)
+      });
+    } catch (err) {
+      if(err){return cb(err)}
+    }
+  },
   unzipDat: function(url, cb){
     try {
       url = Buffer.from(fs.readFileSync(url));

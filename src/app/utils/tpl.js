@@ -13,36 +13,54 @@ let cnt = 0;
 const tpl = {
   header: function(){
     return h('nav.navbar.navbar-expand-lg.nav_main.fixed-top',
-      h('div.navbar-brand',
-        h('img.nav_logo',{
-          src:config.settings.logo
-        })
-      ),
-      h('div.w-100',
-        h('div.input-group.float-right',
-          h('input.form-control.inp-dark',{
-            placeholder: 'Search...',
-            onkeyup: utils.debounce(function(evt){
-              let term = this.value;
-              if(term.length > 3){
-                utils.quick_search(term)
-              } else {
-                document.getElementsByClassName('quick_search')[0].classList.add('hidden')
-              }
-            },3000)
-          })
+      h('div.row.w-100',
+        h('div.col-md-3.col-6',
+          h('div.navbar-brand',
+            h('img.nav_logo',{
+              src:config.settings.logo
+            })
+          )
+        ),
+        h('div.col-md-9.col-6',
+          h('div.w-100',
+            h('div.input-group.float-right',
+              h('input.form-control.inp-dark',{
+                placeholder: 'Search...',
+                onkeyup: utils.debounce(function(evt){
+                  let term = this.value;
+                  if(term.length > 3){
+                    utils.quick_search(term)
+                  } else {
+                    window.dispatchEvent(
+                      new CustomEvent('quick_search', {
+                        detail: false
+                      })
+                    );
+                  }
+                },3000)
+              })
+            )
+          )
         )
       )
     )
   },
   lbox: function(){
-    let img = h('img')
-    return h('a#lb_lg.lightbox.hidden',{
+    let img = h('img'),
+    lbox = h('a#lb_lg.lightbox.hidden',{
       onclick: function(evt){
         evt.target.classList.add('hidden');
         img.src = '';
       }
     },img)
+
+    window.addEventListener('lb-open', function(evt){
+      evt = evt.detail;
+      img.firstChild.src = [config.yts_url, urls.img, [evt, urls.cover_l].join('/')].join('/')
+      lbox.classList.remove('hidden');
+    }, false)
+
+    return lbox
 
   },
   footer: function(){
@@ -169,7 +187,8 @@ const tpl = {
         h('img.nav_logo',{
           src:config.settings.logo
         })
-      )
+      ),
+      h('div.sb-lnks')
     ),
     sb = h('div.sb-main.sb-left'),
     sb_lnk = h('div.sb-link',
@@ -193,7 +212,7 @@ const tpl = {
         location.hash = config.sb_nav.items[i].dest
         sb.classList.toggle('sb-show');
       }
-      sb_body.append(sb_item);
+      sb_body.lastChild.append(sb_item);
     }
 
     return sb
@@ -206,14 +225,16 @@ const tpl = {
 
     window.addEventListener('quick_search', function(evt){
       evt = evt.detail;
-      quick_search.classList.remove('hidden');
-
-      utils.empty(quick_search, function(){
+      if(evt === false){
+        quick_search.classList.add('hidden');
+        utils.emptySync(quick_search)
+      } else {
+        quick_search.classList.remove('hidden');
         for (let i = 0; i < evt.length; i++) {
           quick_search.append(tpl.quick_item(evt[i]))
         }
-        cl(evt)
-      })
+      }
+
     },false)
 
 
@@ -566,9 +587,13 @@ const tpl = {
             evt.target.src = b_img;
           },
           onclick: function(){
-            let lbox = document.getElementById('lb_lg');
-            lbox.firstChild.src = [config.yts_url, urls.img, [obj.img, urls.cover_l].join('/')].join('/')
-            lbox.classList.remove('hidden');
+
+            window.dispatchEvent(
+              new CustomEvent('lb-open', {
+                detail: obj.img
+              })
+            );
+
           }
         }),
         tr_div,
@@ -633,7 +658,7 @@ const tpl = {
           for (let i = 0; i < obj.genres.length; i++) {
             genres.append(h('span.text-success.genre-lnk.sh-9', {
               onclick: function(){
-                yts_db.set(
+                pag_db.set(
                   'search',
                   movie_db.filter(function(o){
                     let item = o.genres;
@@ -766,7 +791,7 @@ const tpl = {
             h('h6.mt-4', 'Director:',
               h('em.text-success.cp.sh-95.position-absolute.ml-2', {
                 onclick: function(){
-                  yts_db.set(
+                  pag_db.set(
                     'search',
                     movie_db.filter(function(o){
                       if(o.director === obj.director){
@@ -787,7 +812,7 @@ const tpl = {
             h('h6.mt-4', 'Writter:',
               h('em.text-success.cp.sh-95.position-absolute.ml-2', {
                 onclick: function(){
-                  yts_db.set(
+                  pag_db.set(
                     'search',
                     movie_db.filter(function(o){
                       if(o.writter === obj.writter){
@@ -964,7 +989,7 @@ const tpl = {
         h('div.media-body',
           h('h6.mt-0.cp.sh-95.text-success', {
             onclick: function(){
-              yts_db.set(
+              pag_db.set(
                 'search',
                 movie_db.filter(function(o){
                   let items = o.cast;
@@ -1024,7 +1049,7 @@ const tpl = {
         h('button.btn.btn-outline-success.btn-sm.fs-7.mr-2.mb-2.sh-95',{
           type: 'button',
           onclick: function(){
-            yts_db.set(
+            pag_db.set(
               'search',
               movie_db.filter(function(o){
                 let item = o.genres;
@@ -1056,7 +1081,7 @@ const tpl = {
         h('button.btn.btn-outline-success.btn-sm.fs-7.mr-2.mb-2.sh-95',{
           type: 'button',
           onclick: function(){
-            yts_db.set(
+            pag_db.set(
               'search',
               movie_db.filter(function(o){
                 let items = o.cast;
@@ -1090,7 +1115,7 @@ const tpl = {
         h('button.btn.btn-outline-success.btn-sm.fs-7.mr-2.mb-2.sh-95',{
           type: 'button',
           onclick: function(){
-            yts_db.set(
+            pag_db.set(
               'search',
               movie_db.filter(function(o){
                 if(o.director === directors[i]){
@@ -1150,7 +1175,7 @@ const tpl = {
     return h('button.btn.btn-outline-success.btn-sm.fs-7.mr-2.mb-2.sh-95',{
       type: 'button',
       onclick: function(){
-        yts_db.set(
+        pag_db.set(
           'search',
           movie_db.filter(function(o){
             let items = o.cast;
@@ -1173,7 +1198,7 @@ const tpl = {
     return h('button.btn.btn-outline-success.btn-sm.fs-7.mr-2.mb-2.sh-95',{
       type: 'button',
       onclick: function(){
-        yts_db.set(
+        pag_db.set(
           'search',
           movie_db.filter(function(o){
             if(o[e] === i){

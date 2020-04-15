@@ -182,6 +182,10 @@
         "dest": "saved"
       },
       {
+        "title": "News",
+        "dest": "news"
+      },
+      {
         "title": "settings",
         "dest": "settings"
       }

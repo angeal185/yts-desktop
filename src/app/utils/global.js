@@ -23,13 +23,22 @@ yts_adapter = new FileSync(base_dir +'/app/db/yts_db.json', {
   deserialize: function(data){
     return jp(data)
   }
+}),
+pag_adapter = new FileSync(base_dir +'/app/db/search_db.json', {
+  serialize: function(obj){
+    return js(obj)
+  },
+  deserialize: function(data){
+    return jp(data)
+  }
 });
 
-global.db = low(adapter)
-global.yts_db = low(yts_adapter)
+global.db = low(adapter);
+global.yts_db = low(yts_adapter);
+global.pag_db = low(pag_adapter);
 
 db.defaults({
-//  history:[],
+  history:[],
   saved: [],
   img_cache: [],
   subs_cache: []
@@ -37,18 +46,23 @@ db.defaults({
 
 yts_db.defaults({
   movies:[],
-  search:[],
   status: []
+}).write();
+
+pag_db.defaults({
+  search:[]
 }).write();
 
 global.movie_db = yts_db.get('movies');
 global.status_db = yts_db.get('status');
-global.search_db = yts_db.get('search');
+global.search_db = pag_db.get('search');
 global.his_db = db.get('history');
 global.save_db = db.get('saved');
 global.img_cache = db.get('img_cache');
 global.subs_cache = db.get('subs_cache');
 global.scrap_cnt = 0;
+
+//yts_db.set('status.url', '')
 
 //global vars
 global.cl = console.log;

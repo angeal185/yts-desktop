@@ -29,6 +29,8 @@ function init(){
   })
 
   ipcMain.on('update-db', function(event, arg) {
+    let items = arg.items,
+    data = arg.data;
     win.webContents.session.downloadURL(arg)
   })
 
@@ -49,7 +51,7 @@ function init(){
       let db_gz = [config.settings.downloads, 'db', fname].join('/');
       item.setSavePath(db_gz)
     }
-
+/*
     item.on('updated', function(event, state){
       if (state === 'interrupted'){
         console.log('Download is interrupted but can be resumed')
@@ -61,23 +63,27 @@ function init(){
         }
       }
     })
-
+*/
     item.once('done', function(event, state){
 
       if(path.extname(fname) === '.jpg'){
         win.webContents.send('dl-img', ttl.slice(0,-4))
       } else if(path.extname(fname) === '.gz'){
+        fname = fname.slice(0,-3);
         let obj = {
           success: false,
           type: 'danger',
+          file: fname,
           msg: 'db download corrupted'
         }
-        gz.unzip(db_gz, [__dirname, urls.dbcache].join('/'), function(err){
+        gz.unzipDb(db_gz, [__dirname, urls.dbcache, fname].join('/'), function(err){
           if(err){return win.webContents.send('update-db', obj)}
           obj.success = true;
-          obj.type = success;
-          delete obj.msg
-          win.webContents.send('update-db', obj)
+          obj.type = 'success';
+          delete obj.msg;
+
+          win.webContents.send('update-db', obj);
+
         })
 
       } else {

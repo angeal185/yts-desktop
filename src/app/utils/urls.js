@@ -9,7 +9,7 @@ const urls = {
   cover_s: 'small-cover.jpg',
   cover_l: 'large-cover.jpg',
   subs: 'app/cache/subs',
-  dbcache: 'app/cache/db/db.json',
+  dbcache: 'app/cache/db',
   bg_sm: './static/img/bg_sm.png',
   bg_med: './static/img/bg_med.png',
   bg_lg: './static/img/bg_lg.png',

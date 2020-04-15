@@ -11,7 +11,7 @@ sp = require('./db/staff_popular'),
 fs = require('fs');
 
   /* @ dev */
-//const build = require('../../build/build');
+const build = require('../../build/build');
 
 //let x = movie_db.value();
 
@@ -52,7 +52,19 @@ window.onload = function(evt){
           return ce(err);
         }
 
-        if(stat.hash === res.hash){
+        let arr = [];
+
+        if(stat.movie_db.hash !== res.movie_db.hash){
+          arr.push('movie_db')
+        }
+        if(stat.staff_db.hash !== res.staff_db.hash){
+          arr.push('staff_db')
+        }
+        if(stat.news_db.hash !== res.news_db.hash){
+          arr.push('news_db')
+        }
+
+        if(arr.length < 1){
           return window.dispatchEvent(
             new CustomEvent('db-status', {
               detail: 1
@@ -60,9 +72,10 @@ window.onload = function(evt){
           );
         }
 
-        ipcRenderer.send('update-db', res.url);
+        ipcRenderer.send('update-db', {items: arr, data: res});
+        
+        //status_db.assign(res).write();
 
-        status_db.assign(res).write();
         cl(res)
       })
     },3000)
