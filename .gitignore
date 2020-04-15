@@ -7,15 +7,16 @@ yarn-error.log*
 lerna-debug.log*
 
 build/tmp/**
-downloads/db/**
-downloads/subs/**
-downloads/torrent/**
 
-src/app/cache/subs/**
-src/app/cache/img/**
-src/app/cache/db/**
+downloads/subs/*.zip
+downloads/torrent/*.torrent
+
+src/app/cache/subs/*.json
+src/app/cache/img/*.jpg
+src/app/cache/db/*.gz
 
 src/app/db/staff_db.bak.json
+src/app/db/news_db.bak.json
 src/app/db/yts_db.bak.json
 src/app/db/search_db.json
 src/app/db/db.json

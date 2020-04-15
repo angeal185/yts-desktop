@@ -3,11 +3,11 @@ config = require('../config'),
 fs = require('fs');
 
 const gz = {
-  zip: function(url, cb){
+  zip: function(url, dest, cb){
     try {
       const i = zlib.createGzip(config.gzip),
       inp = fs.createReadStream(url),
-      out = fs.createWriteStream(url + '.gz');
+      out = fs.createWriteStream(dest);
       inp.pipe(i).pipe(out);
       return cb(false)
     } catch (err) {

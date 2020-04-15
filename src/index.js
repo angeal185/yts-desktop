@@ -48,7 +48,7 @@ function init(){
       ttl = ttl.slice(0,-1).pop() + '.jpg';
       item.setSavePath([__dirname, 'app/cache/img', ttl].join('/'))
     } else if(path.extname(fname) === '.gz'){
-      let db_gz = [config.settings.downloads, 'db', fname].join('/');
+      let db_gz = [__dirname, 'app/cache/db', fname].join('/');
       item.setSavePath(db_gz)
     }
 /*
@@ -76,14 +76,12 @@ function init(){
           file: fname,
           msg: 'db download corrupted'
         }
-        gz.unzipDb(db_gz, [__dirname, urls.dbcache, fname].join('/'), function(err){
+        gz.unzipDb(db_gz, [__dirname, 'app/db', fname].join('/'), function(err){
           if(err){return win.webContents.send('update-db', obj)}
           obj.success = true;
           obj.type = 'success';
           delete obj.msg;
-
           win.webContents.send('update-db', obj);
-
         })
 
       } else {

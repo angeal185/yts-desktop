@@ -11,7 +11,7 @@ sp = require('./db/staff_popular'),
 fs = require('fs');
 
   /* @ dev */
-const build = require('../../build/build');
+const build = require('../../build');
 
 //let x = movie_db.value();
 
@@ -40,6 +40,8 @@ window.onload = function(evt){
     if(err){return ce(err)}
     utils.init(doc);
     let stat = status_db.value();
+    cl(stat)
+    return
     setTimeout(function(){
       utils.fetch(stat.url, function(err,res){
         if(err){
@@ -54,8 +56,8 @@ window.onload = function(evt){
 
         let arr = [];
 
-        if(stat.movie_db.hash !== res.movie_db.hash){
-          arr.push('movie_db')
+        if(stat.yts_db.hash !== res.yts_db.hash){
+          arr.push('yts_db')
         }
         if(stat.staff_db.hash !== res.staff_db.hash){
           arr.push('staff_db')
@@ -73,7 +75,7 @@ window.onload = function(evt){
         }
 
         ipcRenderer.send('update-db', {items: arr, data: res});
-        
+
         //status_db.assign(res).write();
 
         cl(res)
