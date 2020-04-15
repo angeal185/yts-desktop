@@ -5,6 +5,7 @@ config = require('./config'),
 { ipcRenderer } = require('electron'),
 app = require('electron').remote.app
 _ = require('lodash'),
+{ ls,ss } = require('./utils/storage'),
 utils = require('./utils'),
 gz = require('./utils/gzip'),
 sp = require('./db/staff_popular'),
@@ -16,6 +17,10 @@ const build = require('../../build');
 //let x = movie_db.value();
 
 //cl(x[0])
+//status_db.get('news_db').assign({hash: ''}).write();
+
+
+
 
 ipcRenderer.on('dl-stat', function(event, res){
   cl('dl_hit')
@@ -40,8 +45,6 @@ window.onload = function(evt){
     if(err){return ce(err)}
     utils.init(doc);
     let stat = status_db.value();
-    cl(stat)
-    return
     setTimeout(function(){
       utils.fetch(stat.url, function(err,res){
         if(err){
@@ -54,19 +57,34 @@ window.onload = function(evt){
           return ce(err);
         }
 
-        let arr = [];
+        let arr = [],
+        str;
+
+        if(stat.url !== res.url){
+          status_db.assign({url: res.url}).write();
+          cl('status url updated')
+        }
 
         if(stat.yts_db.hash !== res.yts_db.hash){
-          arr.push('yts_db')
+          arr.push('yts_db');
+          ls.set('yts_db_hash', res.yts_db);
+          update_cnt++
         }
+
         if(stat.staff_db.hash !== res.staff_db.hash){
-          arr.push('staff_db')
+          arr.push('staff_db');
+          ls.set('staff_db_hash', res.staff_db);
+          update_cnt++
         }
+
         if(stat.news_db.hash !== res.news_db.hash){
-          arr.push('news_db')
+          arr.push('news_db');
+          ls.set('news_db_hash', res.news_db);
+          update_cnt++
         }
 
         if(arr.length < 1){
+          utils.toast('info', 'db items up to date');
           return window.dispatchEvent(
             new CustomEvent('db-status', {
               detail: 1
@@ -74,11 +92,13 @@ window.onload = function(evt){
           );
         }
 
+        str = 'updating '+ arr.length + ' db item';
+        if(arr.length > 1) str+= 's'
+
+        utils.toast('warning', str + '...')
+
         ipcRenderer.send('update-db', {items: arr, data: res});
 
-        //status_db.assign(res).write();
-
-        cl(res)
       })
     },3000)
 

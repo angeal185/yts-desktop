@@ -1,18 +1,1 @@
-{
-  "url": "https://ghcdn.rawgit.org/angeal185/yts-db/master/db-status.json",
-  "yts_db": {
-    "hash": "0c544d94f3b85b79b606256951b8a342e9da9d25e20186c51ce9a7006f0a05cdc7e14fd10fb1d351499571892de383c54dfb39852039df6986a95676c184e69e",
-    "url": "https://ghcdn.rawgit.org/angeal185/yts-db/master/db/yts_db.json.gz",
-    "date": 1586685377224
-  },
-  "staff_db": {
-    "hash": "6881512eec1b66dccf82e8a753dfa9073ef19d2b8e1179f328e9d5e345c2147a225948ff2d228efb2040003af8454cfad54602e9ead3276603a5426a5b81a40e",
-    "url": "https://ghcdn.rawgit.org/angeal185/yts-db/master/db/staff_db.json.gz",
-    "date": 1586685377224
-  },
-  "news_db": {
-    "hash": "0c544d94f3b85b79b606256951b8a342e9da9d25e20186c51ce9a7006f0a05cdc7e14fd10fb1d351499571892de383c54dfb39852039df6986a95676c184e69e",
-    "url": "https://ghcdn.rawgit.org/angeal185/yts-db/master/db/news_db.json.gz",
-    "date": 1586685377224
-  }
-}
+{"url":"https://ghcdn.rawgit.org/angeal185/yts-db/master/db-status.json","yts_db":{"hash":"0c544d94f3b85b79b606256951b8a342e9da9d25e20186c51ce9a7006f0a05cdc7e14fd10fb1d351499571892de383c54dfb39852039df6986a95676c184e69e","url":"https://ghcdn.rawgit.org/angeal185/yts-db/master/db/yts_db.json.gz","date":1586685377224},"staff_db":{"hash":"6881512eec1b66dccf82e8a753dfa9073ef19d2b8e1179f328e9d5e345c2147a225948ff2d228efb2040003af8454cfad54602e9ead3276603a5426a5b81a40e","url":"https://ghcdn.rawgit.org/angeal185/yts-db/master/db/staff_db.json.gz","date":1586685377224},"news_db":{"hash":"0c544d94f3b85b79b606256951b8a342e9da9d25e20186c51ce9a7006f0a05cdc7e14fd10fb1d351499571892de383c54dfb39852039df6986a95676c184e69e","url":"https://ghcdn.rawgit.org/angeal185/yts-db/master/db/news_db.json.gz","date":1586685377224}}

@@ -68,8 +68,7 @@ global.save_db = db.get('saved');
 global.img_cache = db.get('img_cache');
 global.subs_cache = db.get('subs_cache');
 global.scrap_cnt = 0;
-
-//yts_db.unset('status').write();
+global.update_cnt = 0;
 
 //global vars
 global.cl = console.log;

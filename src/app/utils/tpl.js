@@ -98,6 +98,40 @@ const tpl = {
       )
       return item;
   },
+  quick_bar: function(){
+    return h('div.quick-bar',
+      h('div.quick-wrap',
+        h('span.icon-clock.stat-ico',{
+          title: 'History',
+          onclick: function(){
+            ss.set('dest', 'history');
+            location.hash = 'history'
+          }
+        }),
+        h('span.icon-star.stat-ico',{
+          title: 'Saved items',
+          onclick: function(){
+            ss.set('dest', 'saved');
+            location.hash = 'saved'
+          }
+        }),
+        h('span.icon-bell.stat-ico',{
+          title: 'News',
+          onclick: function(){
+            ss.set('dest', 'news');
+            location.hash = 'news'
+          }
+        }),
+        h('span.icon-cog.stat-ico',{
+          title: 'Settings',
+          onclick: function(){
+            ss.set('dest', 'settings');
+            location.hash = 'settings'
+          }
+        })
+      )
+    )
+  },
   status_bar: function(){
 
     let online_globe = h('div.globe.mr-2'),
@@ -262,6 +296,7 @@ const tpl = {
         tpl.lbox(),
         quick_search,
         loader,
+        tpl.quick_bar(),
         function(){
           if(config.settings.to_top){
             return tpl.to_top()
@@ -275,6 +310,39 @@ const tpl = {
       ),
       h('div#main-content.container-fluid',
         h('div#app-main')
+      )
+    )
+  },
+  news_post: function(obj){
+    return h('div.container',
+      h('div.row',
+        h('div.col-6.col-lg-8',
+          h('h4', obj.title)
+        ),
+        h('div.col-6.col-lg-4.text-right',
+          h('h5.text-success', {
+            title: 'Date posted'
+          }, utils.format_date(obj.date))
+        )
+      ),
+      h('div.card-text.news-block', obj.post),
+      h('div.mt-4',
+        h('span.icon-user.mr-2',
+          h('span.ml-2.text-success.cp', {
+            title: 'Author',
+            onclick: function(evt){
+              location.hash = 'news/author/'+ evt.target.innerText
+            }
+          }, obj.author)
+        ),
+        h('span.icon-tag.mr-2',
+          h('span.ml-2.text-success.cp', {
+            title: 'Category',
+            onclick: function(evt){
+              location.hash = 'news/category/'+ evt.target.innerText
+            }
+          }, obj.category)
+        )
       )
     )
   },

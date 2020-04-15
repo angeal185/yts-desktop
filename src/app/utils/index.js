@@ -6,6 +6,7 @@ request = require('request'),
 { ipcRenderer } = require('electron'),
 execFile = require('child_process').execFile,
 jpegtran = require('jpegtran-bin'),
+news_db = require('../db/news_db'),
 tpl = require('./tpl'),
 scrap = require('./scrap'),
 {ls,ss} = require('./storage');
@@ -58,34 +59,23 @@ const utils = {
       return utils.toast(res.type, res.msg)
     }
 
-    let cachedb = [base_dir, urls.dbcache].join('/');
-
-    fs.readFile(cachedb, 'utf8', function(err, data){
-      if(err){
-        utils.toast('danger', 'database update failed')
-        return cl(err);
-      }
-
-      data = jp(data);
-      yts_db.set('movies', data);
-
-      fs.unlink(cachedb, function(err){
-        if(err){
-          cl(cachedb + ' was not deleted');
-        } else {
-          cl(cachedb + ' was deleted');
-        }
-
-        window.dispatchEvent(
-          new CustomEvent('db-status', {
-            detail: 1
-          })
-        );
-
-        return utils.toast('success', 'db update complete');
-
+    window.dispatchEvent(
+      new CustomEvent('db-status', {
+        detail: 1
       })
-    })
+    );
+
+    status_db.get(res.file).assign(ls.get(res.file +'_hash')).write();
+    utils.toast('success', res.file +' update complete');
+    update_cnt--
+    if(update_cnt < 1){
+      setTimeout(function(){
+        location.reload();
+      },1000)
+    }
+
+    return
+
   },
   cache_img: function(url){
     ipcRenderer.send('dl-img', url)
@@ -117,6 +107,22 @@ const utils = {
 
       if(dest[0] === 'movie'){
         ss.set('mov_id', dest[1]);
+      }
+
+      if(dest[0] === 'news'){
+        let news_res;
+        if(dest.length === 1){
+          news_res = _.chunk(_.orderBy(news_db ,['date'], ['desc']), 10)
+          pag_db.set('search', news_res).write();
+        } else {
+          news_res = _.filter(news_db, function(i){
+            return i[dest[1]] === dest[2];
+          })
+          news_res = _.chunk(_.orderBy(news_res ,['date'], ['desc']), 10)
+          cl(news_res)
+          pag_db.set('search', news_res).write();
+        }
+
       }
 
       utils.empty(main, function(){

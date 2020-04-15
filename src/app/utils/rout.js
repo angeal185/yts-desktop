@@ -4,6 +4,7 @@ tpl = require('./tpl'),
 h = require('./h'),
 _ = require('lodash'),
 s_db = require('../db/staff_db'),
+news_db = require('../db/news_db'),
 pagination = require('./pagination'),
 {ls,ss} = require('./storage');
 
@@ -98,7 +99,115 @@ const rout = {
   },
   news: function(dest){
 
+    ss.set('pag-current', 1)
 
+    let pag_view_main = h('div#pag_view_main.container'),
+    pag_div = h('div#pagination.row'),
+    search_res = h('div.container',
+      h('div.row',
+        h('div.col-md-6',
+          h('h2', 'News')
+        ),
+        h('div.col-md-6',
+          h('div.form-group.mb-4',
+            h('input.form-control.inp-dark',{
+              placeholder: 'Search title...',
+              onkeyup: utils.debounce(function(evt){
+                let val = evt.target.value,
+                news_res;
+                utils.emptySync(pag_view_main);
+                if(pag_div){
+                  pag_div.remove()
+                }
+                if(val.length > 0){
+                  news_res = _.filter(news_db, function(i){
+                    if(i.title.toLowerCase().includes(val.toLowerCase())){
+                      return i;
+                    }
+                  })
+                  
+                  if(news_res && news_res.length > 0){
+                    for (let i = 0; i < 20; i++) {
+                      pag_view_main.append(tpl.news_post(news_res[i]),h('hr'))
+                    }
+                  } else {
+                    pag_view_main.append(h('h5', 'No items found...'))
+                  }
+
+
+                }
+              },1000)
+            })
+          )
+        )
+      ),
+      h('hr.w-100')
+    ),
+    p_current = ss.get('pag-current')
+    pag_num = h('span#pagnum', p_current),
+    res = search_db.value();
+
+    window.page_num = function(i){
+      pag_num.innerText = i;
+    }
+
+    window.page_change = function(){
+      let page_res = res[ss.get('pag-current') - 1]
+
+      utils.emptySync(pag_view_main);
+
+      for (let i = 0; i < page_res.length; i++) {
+        pag_view_main.append(tpl.news_post(page_res[i]),h('hr'))
+      }
+
+      utils.totop(0)
+    }
+
+    for (let i = 0; i < res[p_current - 1].length; i++) {
+      cl(res[p_current - 1][i])
+      pag_view_main.append(tpl.news_post(res[p_current - 1][i]),h('hr'))
+    }
+
+    if(res.length > 1){
+
+      let max = res.length,
+      item;
+
+      ss.set('pag-max', max);
+
+      if(max < 6){
+        item = h('ul.pagination.col-md-6');
+        for (let i = 0; i < max; i++) {
+          item.append(pagination.pageItem(js(i + 1)))
+        }
+      } else {
+        item = h('ul.pagination.col-md-6',
+          pagination.prevlink(),
+          pagination.pag_back(p_current),
+          pagination.pageItem(p_current + 1),
+          pagination.pageItem(p_current + 2),
+          pagination.pageItem(p_current + 3),
+          pagination.pag_forw(max,p_current),
+          pagination.nextlink(max)
+        )
+      }
+
+      pag_div.append(
+        item,h('div.pag-text.col-md-6.text-right', 'viewing page ', pag_num, ' of '+ max)
+      )
+
+      dest.append(
+        search_res,
+        pag_view_main,
+        h('div.container', pag_div)
+      )
+
+    } else {
+      dest.append(
+        search_res,
+        pag_view_main
+      )
+    }
 
   },
   recent: function(){
@@ -225,7 +334,6 @@ const rout = {
       )
     ),
     pag_view_main = h('div#pag_view_main.row'),
-    search_url = ss.get('search_url'),
     pag_div = h('div#pagination.row'),
     p_current = ss.get('pag-current')
     pag_num = h('span#pagnum', p_current),
@@ -475,8 +583,6 @@ const rout = {
 
                 pag_db.set('search',sdb).write();
                 ss.set('pag-current', 1);
-
-                ss.set('search_url', ['search', 'advanced']);
                 location.hash = 'search/advanced';
               }
             }, 'Search')

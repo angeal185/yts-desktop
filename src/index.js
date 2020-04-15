@@ -28,16 +28,18 @@ function init(){
     win.webContents.session.downloadURL(arg)
   })
 
-  ipcMain.on('update-db', function(event, arg) {
-    let items = arg.items,
-    data = arg.data;
-    win.webContents.session.downloadURL(arg)
+  ipcMain.on('update-db', function(event, obj) {
+
+    for (let i = 0; i < obj.items.length; i++) {
+      win.webContents.session.downloadURL(obj.data[obj.items[i]].url)
+    }
+
   })
 
 
   win.webContents.session.on('will-download', function(event, item, webContents){
     let fname = item.getFilename(),
-    ttl;
+    ttl, db_gz;
 
     if(path.extname(fname) === '.torrent'){
       item.setSavePath([config.settings.downloads, 'torrent', fname].join('/'))
@@ -48,10 +50,10 @@ function init(){
       ttl = ttl.slice(0,-1).pop() + '.jpg';
       item.setSavePath([__dirname, 'app/cache/img', ttl].join('/'))
     } else if(path.extname(fname) === '.gz'){
-      let db_gz = [__dirname, 'app/cache/db', fname].join('/');
+      db_gz = [__dirname, 'app/cache/db', fname].join('/');
       item.setSavePath(db_gz)
     }
-/*
+
     item.on('updated', function(event, state){
       if (state === 'interrupted'){
         console.log('Download is interrupted but can be resumed')
@@ -63,7 +65,7 @@ function init(){
         }
       }
     })
-*/
+
     item.once('done', function(event, state){
 
       if(path.extname(fname) === '.jpg'){
@@ -73,10 +75,10 @@ function init(){
         let obj = {
           success: false,
           type: 'danger',
-          file: fname,
+          file: fname.split('.')[0],
           msg: 'db download corrupted'
         }
-        gz.unzipDb(db_gz, [__dirname, 'app/db', fname].join('/'), function(err){
+        gz.unzip(db_gz, [__dirname, 'app/db', fname].join('/'), function(err){
           if(err){return win.webContents.send('update-db', obj)}
           obj.success = true;
           obj.type = 'success';
