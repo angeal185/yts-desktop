@@ -9,7 +9,7 @@ lerna-debug.log*
 build/tmp/**
 
 src/app/db/search_db.json
-src/app/db/db.json
+src/app/db/db_main.json
 src/app/db/staff_db.bak.json
 src/app/db/news_db.bak.json
 src/app/db/yts_db.bak.json

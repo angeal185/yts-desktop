@@ -8,7 +8,7 @@ global.jp = JSON.parse;
 const config = require('../config'),
 low = require('lowdb'),
 FileSync = require('lowdb/adapters/FileSync'),
-adapter = new FileSync(base_dir +'/app/db/db.json', {
+adapter = new FileSync(base_dir +'/app/db/db_main.json', {
   serialize: function(obj){
     return js(obj)
   },
