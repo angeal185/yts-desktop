@@ -97,6 +97,19 @@ const rout = {
 
 
   },
+  contact: function(dest){
+
+    let i = h('iframe', {
+          src: 'https://www.foxyform.com/form.php?id=958567&sec_hash=02af845bf05',
+          frameBorder: 0
+        });
+
+
+    dest.append(
+      h('div.embed-responsive', i)
+    )
+
+  },
   news: function(dest){
 
     ss.set('pag-current', 1)
@@ -125,7 +138,7 @@ const rout = {
                       return i;
                     }
                   })
-                  
+
                   if(news_res && news_res.length > 0){
                     for (let i = 0; i < 20; i++) {
                       pag_view_main.append(tpl.news_post(news_res[i]),h('hr'))

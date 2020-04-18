@@ -1,6 +1,7 @@
 //baseurl ~ https://yts.mx
 
 const urls = {
+  styles: 'app/static/css',
   url: '/movie/',
   img: 'assets/images/movies',
   actors: 'assets/images/actors/thumb',

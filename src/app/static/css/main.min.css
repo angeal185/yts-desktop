@@ -913,3 +913,10 @@ select option {
 .quick-wrap{
 
 }
+
+.iframe-container {
+  border: none;
+  height: 1000px;
+  position: relative;
+  width: 100%;
+}

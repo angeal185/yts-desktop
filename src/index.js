@@ -5,6 +5,8 @@ gz = require('./app/utils/gzip'),
 urls = require('./app/utils/urls'),
 config = require('./app/config');
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+
 config.main_cnf.icon = __dirname + config.settings.ico;
 config.main_cnf.webPreferences.preload = __dirname + "/app/main.js";
 
@@ -115,3 +117,9 @@ app.on('activate', function(){
     init();
   }
 })
+
+app.on('certificate-error', function(event, webContents, url, err, cert, cb) {
+  cl('hit')
+  event.preventDefault();
+  cb(true);
+});

@@ -28,7 +28,6 @@
   "dependencies": {
     "bittorrent-tracker": "^9.14.5",
     "electron-squirrel-startup": "^1.0.0",
-    "jpegtran-bin": "^4.0.0",
     "lowdb": "^1.0.0"
   },
   "devDependencies": {

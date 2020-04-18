@@ -1,13 +1,16 @@
 const fs = require('fs'),
 h = require('./h'),
+_ = require('lodash'),
 config = require('../config'),
 rout = require('./rout'),
 request = require('request'),
 { ipcRenderer } = require('electron'),
+session = require('electron').remote.session,
+Cookies = session.defaultSession.cookies,
 execFile = require('child_process').execFile,
-jpegtran = require('jpegtran-bin'),
 news_db = require('../db/news_db'),
 tpl = require('./tpl'),
+urls = require('./urls'),
 scrap = require('./scrap'),
 {ls,ss} = require('./storage');
 
@@ -16,10 +19,10 @@ const utils = {
     try {
 
       for (let i = 0; i < config.fontface.length; i++) {
-        utils.add_font(config.fontface[i], doc);
+        utils.add_font(window, config.fontface[i], doc);
       }
 
-      utils.add_styles(doc);
+      utils.add_styles(window, doc, config.CSS);
 
       if(!ls.get('suggest')){
         ls.set('suggest', []);
@@ -30,14 +33,14 @@ const utils = {
       if(err){return cb(err);}
     }
   },
-  add_styles: function(doc){
-    let sheet = new CSSStyleSheet();
-    sheet.replaceSync(fs.readFileSync(base_dir + config.CSS, 'utf8'));
+  add_styles: function(win, doc, styl){
+    let sheet = new win.CSSStyleSheet();
+    sheet.replaceSync(fs.readFileSync([base_dir, urls.styles, styl].join('/'), 'utf8'));
     doc.adoptedStyleSheets = [sheet];
   },
-  add_font: function(obj, doc){
+  add_font: function(win, obj, doc){
     let buff = new Uint8Array(fs.readFileSync(base_dir + obj.path)).buffer;
-    buff = new FontFace(obj.name, buff, {
+    buff = new win.FontFace(obj.name, buff, {
       style: obj.style,
       weight: obj.weight
     })
@@ -103,6 +106,9 @@ const utils = {
     main = main.lastChild;
 
     window.addEventListener('hashchange', function() {
+      if( location.origin !== 'file://'){
+        return;
+      }
       let dest = location.hash.slice(1).split('/');
 
       if(dest[0] === 'movie'){
@@ -576,6 +582,152 @@ const utils = {
       cl(res)
       cb(false, res)
     })
+  },
+  add_comments: function(id, x, rs){
+
+
+    let frame = h('iframe.iframe-container',{
+      frameBorder: 0
+    }),
+    spn = h("span#IDCommentsPostTitle"),
+    scr = h("script", {
+      src: config.comments.url + config.comments.api
+    }),
+    doc,win;
+
+    frame.onload = function(){
+      doc = frame.contentDocument;
+      win = frame.contentWindow;
+      win.idcomments_acct = config.comments.cid;
+      win.idcomments_post_id = id;
+      win.idcomments_post_url = [config.comments.post_url, x, id].join('/');
+
+      for (let i = 0; i < config.fontface.length; i++) {
+        utils.add_font(win, config.fontface[i], doc);
+      }
+      utils.add_styles(win, doc, config.comment_CSS)
+
+      doc.body.append(spn);
+
+      setTimeout(function(){
+        doc.body.append(scr);
+      },3000)
+
+      var ud_ele = win.setInterval(function(){
+        let wp_lnk = doc.getElementsByClassName('idc-loginbtn_wordpress')[0],
+        shr = doc.getElementsByClassName('idc-share')[0],
+        logout_lnk = doc.getElementById('IDLogoutLink2'),
+        login_lnk = doc.getElementsByClassName('idc-btn_l');
+
+        if(wp_lnk || shr || logout_lnk){
+
+          if(login_lnk){
+            for (let i = 0; i < login_lnk.length; i++) {
+              if(login_lnk[i].lastChild.firstChild.innerText === 'Login'){
+                login_lnk[i].removeAttribute('href');
+                login_lnk[i].setAttribute('onclick', 'logUserIn(); return false;');
+                login_lnk[i].addEventListener('click', function(){
+                  setTimeout(function(){
+                    utils.emptySync(rs);
+                    rs.append(utils.add_comments(id,x,rs));
+                  },5000)
+                })
+              }
+            }
+          }
+
+          if(logout_lnk){
+            logout_lnk.removeAttribute('href');
+            logout_lnk.parentNode.children[0].removeAttribute('href');
+            logout_lnk.onclick = function(){
+              Cookies.get({url: config.comments.url})
+              .then(function(c){
+                let cnt = 0,
+                clen = c.length;
+
+                for (let i = 0; i < clen; i++) {
+                  Cookies.remove(config.comments.url, c[i].name)
+                  .then(function(c){
+                      cnt++
+                      if(cnt === clen){
+                        cl('all comments personal data cleaned.')
+                        utils.emptySync(rs);
+                        rs.append(utils.add_comments(id,x,rs))
+                      }
+                  }).catch(function(err){
+                    cl(err)
+                  })
+                }
+              }).catch(function(err){
+                cl(err)
+              })
+
+            }
+          }
+
+          if(wp_lnk){
+            wp_lnk.remove();
+          }
+
+          if(shr){
+            shr.remove();
+          }
+
+          ud_ele = null;
+
+          const obsvr = new win.MutationObserver(
+            utils.debounce(function(mutationsList, observer) {
+              setTimeout(function(){
+                utils.clean_comments(doc)
+              },1000)
+            },500)
+          );
+
+          obsvr.observe(doc.body, {
+            attributes: false,
+            childList: true,
+            subtree: true
+          });
+
+          utils.clean_comments(doc)
+          ss.set('cto', 0)
+          return win.clearInterval(ud_ele)
+        }
+      },3000)
+
+      win.setTimeout(function(){
+        if(ud_ele){
+          win.clearInterval(ud_ele);
+          setTimeout(function(){
+            let cto = ss.get('cto') || 0;
+            utils.emptySync(rs);
+            if(cto < 10){
+              ss.set('cto', cto++)
+              rs.append(utils.add_comments(id,x,rs));
+            }
+
+          },5000)
+          return cl('comments timeout')
+        }
+      }, 30000)
+
+    }
+
+    return frame;
+
+
+
+  },
+  clean_comments: function(doc){
+
+    doc.querySelectorAll('.idc-i > a').forEach(function(ele){
+      ele.target = '_blank'
+    });
+
+    doc.querySelectorAll('.idc-i > em > a').forEach(function(ele){
+      ele.removeAttribute('href')
+    });
+
   }
 }
 

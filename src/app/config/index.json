@@ -186,8 +186,12 @@
         "dest": "news"
       },
       {
-        "title": "settings",
+        "title": "Settings",
         "dest": "settings"
+      },
+      {
+        "title": "Contact",
+        "dest": "contact"
       }
     ]
   },
@@ -257,7 +261,8 @@
       "autoplayPolicy": "no-user-gesture-required"
     }
   },
-  "CSS": "/app/static/css/main.min.css",
+  "CSS": "main.min.css",
+  "comment_CSS": "comments.min.css",
   "fontface": [
     {
       "name": "ico",
@@ -316,5 +321,11 @@
         "perView": 1
       }
     }
+  },
+  "comments": {
+    "url": "https://www.intensedebate.com",
+    "cid": "1b14f3d9059d7deb43a8578670acb0ac",
+    "post_url": "https://angeal185.github.io/yts-comments",
+    "api": "/js/genericCommentWrapperV2.js"
   }
 }

@@ -589,7 +589,7 @@ const tpl = {
     hash_arr = [],
     scrap_cnt = 0,
     c_div = h('div'),
-    rev_div = c_div.cloneNode(),
+    rev_div = h('div.hidden'),
     b_img = urls.bg_lg,
     m_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/'),
     sub_div = h('div.list-group'),
@@ -612,7 +612,9 @@ const tpl = {
       h('h4.text-success', 'Fetching torrent specs...',
         h('span.spinner-grow.spinner-grow-sm.ml-2.sp-lg.float-right')
       )
-    );
+    ),
+    comments_div = h('div.iframe-container');
+    comments_div.append(utils.add_comments(obj.imdb_code, 'movie', comments_div))
 
     if(img_cache.value().indexOf(obj.img) !== -1){
       m_img = urls.cache_jpg.replace('{{id}}', obj.img);
@@ -917,9 +919,21 @@ const tpl = {
             }
           })
         ),
-        rev_div
+        rev_div,
+        h('hr.mt-4'),
+        h('h4.mt-4.container-fluid', 'Comments',
+          h('span.icon-eye.text-success.float-right.cp.sh-9', {
+            title: 'show comments',
+            onclick: function(){
+              comments_div.classList.toggle('hidden')
+            }
+          })
+        ),
+        comments_div
       )
     )
+
+
 
 
     function scrap(x){

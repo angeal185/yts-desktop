@@ -5,6 +5,7 @@ config = require('./config'),
 { ipcRenderer } = require('electron'),
 app = require('electron').remote.app
 _ = require('lodash'),
+h = require('./utils/h'),
 { ls,ss } = require('./utils/storage'),
 utils = require('./utils'),
 gz = require('./utils/gzip'),
@@ -18,9 +19,6 @@ const build = require('../../build');
 
 //cl(x[0])
 //status_db.get('news_db').assign({hash: ''}).write();
-
-
-
 
 ipcRenderer.on('dl-stat', function(event, res){
   cl('dl_hit')
@@ -39,11 +37,12 @@ ipcRenderer.on('update-db', function(event, res){
 
 window.onload = function(evt){
   let doc = evt.target;
-  doc.head.remove();
-  cl(evt)
+  //doc.head.remove();
+
   utils.pre(doc, function(err){
     if(err){return ce(err)}
     utils.init(doc);
+
     let stat = status_db.value();
     setTimeout(function(){
       utils.fetch(stat.url, function(err,res){
@@ -107,9 +106,6 @@ window.onload = function(evt){
   });
 }
 
-///////
-
-
 /*
 
 function sha512(data){
@@ -118,9 +114,9 @@ function sha512(data){
 
 fs.writeFileSync('./yts_db.json', js({movies:x}));
 
-
 clean.img_cache('img',function(err,res){
   if(err){return ce(err)}
   cl(res)
 })
+
 */
