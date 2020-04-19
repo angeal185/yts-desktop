@@ -1,6 +1,8 @@
 const fs = require('fs'),
 crypto = require('crypto'),
 _ = require('lodash'),
+glob = require('glob'),
+path = require('path'),
 gzip = require('../src/app/utils/gzip'),
 db_status = require('../../yts-db/db-status'),
 s_db = require('../src/app/db/staff_db');
@@ -12,6 +14,95 @@ db_url = db_url.join('/');
 
 
 const build = {
+  scrap_reviews: function(start, end){
+    global.err_arr = [];
+    glob(db_url + '/reviews/*.json', function(err,res){
+      if(err){return cl('globbb errr')}
+      let arr = [];
+
+      for (let i = 0; i < res.length; i++) {
+        arr.push(path.basename(res[i], '.json'))
+      }
+
+      let x = movie_db.value();
+
+        let cnt = start;
+        init()
+        function init(){
+          if(arr.indexOf(x[cnt].imdb_code) === -1){
+            build.fetch_reviews(x[cnt].imdb_code, function(err,res){
+              if(!err && typeof res === 'object'){
+                fs.writeFileSync([db_url, 'reviews', x[cnt].imdb_code + '.json'].join('/'), js(res))
+                cl(cnt + ' out of '+ end +' complete')
+              } else {
+                err_arr.push(x[cnt].imdb_code)
+              }
+              cnt++
+              if(cnt === end){
+                  cl(js(err_arr))
+                cl('done')
+              } else {
+                init()
+              }
+              return;
+            })
+          } else {
+            cnt++
+            if(cnt === end){
+              cl(js(err_arr))
+              cl('done')
+            } else {
+              init()
+            }
+          }
+        }
+
+
+    })
+  },
+  fetch_reviews: function(id, cb){
+    fetch('https://www.imdb.com/title/'+ id +'/reviews', {
+      method: 'GET',
+      headers: headers.html_cors
+    })
+    .then(function(res){
+      if (res.status >= 200 && res.status < 300) {
+        return res.text();
+      } else {
+        return Promise.reject(new Error(res.statusText))
+      }
+    })
+    .then(function(res) {
+
+      let items = new DOMParser(),
+      arr = [];
+      items = items.parseFromString(res, "text/html");
+      items = items.getElementsByClassName('lister-item-content');
+      let rank;
+
+      if(items){
+        for (let i = 0; i < items.length; i++) {
+          if(i < 3){
+            rank = items[i].getElementsByClassName('actions')[0].innerText.trim().split(' ');
+            arr.push({
+              title: items[i].getElementsByClassName('title')[0].innerText.trim(),
+              rating: parseFloat(items[i].getElementsByTagName('span')[1].innerText.trim()),
+              date: items[i].getElementsByClassName('review-date')[0].innerText.trim(),
+              review: items[i].getElementsByClassName('text show-more__control')[0].innerHTML,
+              user: items[i].getElementsByClassName('display-name-link')[0].firstChild.innerText.trim(),
+              rank: [parseInt(rank[0]), parseInt(rank[3])]
+            })
+          }
+        }
+      }
+
+
+      cb(false, arr)
+    })
+    .catch(function(err){
+      cb(err)
+    })
+  },
   gz_db: function(src, dest){
     gzip.zip(src,dest, function(err){
       if(err){return cl('unable to gz ' + src)}
@@ -322,5 +413,8 @@ window.getdat = function(){
 */
 
 //build.sync_db()
+cl( movie_db.value()[0])
+//build.scrap_reviews(6000,7000)
+
 
 module.exports = build;

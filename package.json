@@ -28,7 +28,8 @@
   "dependencies": {
     "bittorrent-tracker": "^9.14.5",
     "electron-squirrel-startup": "^1.0.0",
-    "lowdb": "^1.0.0"
+    "lowdb": "^1.0.0",
+    "magnet2torrent-js": "^1.4.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.39",

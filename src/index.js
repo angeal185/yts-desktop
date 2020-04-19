@@ -5,8 +5,6 @@ gz = require('./app/utils/gzip'),
 urls = require('./app/utils/urls'),
 config = require('./app/config');
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
-
 config.main_cnf.icon = __dirname + config.settings.ico;
 config.main_cnf.webPreferences.preload = __dirname + "/app/main.js";
 
@@ -31,18 +29,15 @@ function init(){
   })
 
   ipcMain.on('update-db', function(event, obj) {
-
     for (let i = 0; i < obj.items.length; i++) {
       win.webContents.session.downloadURL(obj.data[obj.items[i]].url)
     }
-
   })
-
 
   win.webContents.session.on('will-download', function(event, item, webContents){
     let fname = item.getFilename(),
     ttl, db_gz;
-
+    cl(fname)
     if(path.extname(fname) === '.torrent'){
       item.setSavePath([config.settings.downloads, 'torrent', fname].join('/'))
     } else if(path.extname(fname) === '.zip'){
@@ -102,6 +97,7 @@ function init(){
 
     })
   })
+
 }
 
 app.whenReady().then(init);

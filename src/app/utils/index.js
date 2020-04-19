@@ -12,6 +12,7 @@ news_db = require('../db/news_db'),
 tpl = require('./tpl'),
 urls = require('./urls'),
 scrap = require('./scrap'),
+styles = require('./styles'),
 {ls,ss} = require('./storage');
 
 const utils = {
@@ -22,7 +23,7 @@ const utils = {
         utils.add_font(window, config.fontface[i], doc);
       }
 
-      utils.add_styles(window, doc, config.CSS);
+      utils.add_styles(window, doc, 'main');
 
       if(!ls.get('suggest')){
         ls.set('suggest', []);
@@ -35,11 +36,11 @@ const utils = {
   },
   add_styles: function(win, doc, styl){
     let sheet = new win.CSSStyleSheet();
-    sheet.replaceSync(fs.readFileSync([base_dir, urls.styles, styl].join('/'), 'utf8'));
+    sheet.replaceSync(styles[styl]);
     doc.adoptedStyleSheets = [sheet];
   },
   add_font: function(win, obj, doc){
-    let buff = new Uint8Array(fs.readFileSync(base_dir + obj.path)).buffer;
+    let buff = new Uint8Array(fs.readFileSync([base_dir, urls.fonts, obj.path].join('/'))).buffer;
     buff = new win.FontFace(obj.name, buff, {
       style: obj.style,
       weight: obj.weight
@@ -167,7 +168,7 @@ const utils = {
   },
   is_offline: function(i){
     utils.globe_change(i,'red','green', 'orange', 'offline')
-    ss.set('is_online', true)
+    ss.set('is_online', false)
   },
   add_spn: function(item, text){
     item.parentNode.setAttribute('disabled', true);
@@ -583,10 +584,13 @@ const utils = {
       cb(false, res)
     })
   },
-  add_comments: function(id, x, rs){
+  add_comments: function(id, title, x, rs){
 
 
-    let frame = h('iframe.iframe-container',{
+    let cloader = h('h4.text-success', 'Fetching comments...',
+      h('span.spinner-grow.spinner-grow-sm.ml-2.sp-lg.float-right')
+    ),
+    frame = h('iframe.iframe-container',{
       frameBorder: 0
     }),
     spn = h("span#IDCommentsPostTitle"),
@@ -600,12 +604,13 @@ const utils = {
       win = frame.contentWindow;
       win.idcomments_acct = config.comments.cid;
       win.idcomments_post_id = id;
+      win.idcomments_post_title = title;
       win.idcomments_post_url = [config.comments.post_url, x, id].join('/');
 
       for (let i = 0; i < config.fontface.length; i++) {
         utils.add_font(win, config.fontface[i], doc);
       }
-      utils.add_styles(win, doc, config.comment_CSS)
+      utils.add_styles(win, doc, 'comments')
 
       doc.body.append(spn);
 
@@ -620,7 +625,7 @@ const utils = {
         login_lnk = doc.getElementsByClassName('idc-btn_l');
 
         if(wp_lnk || shr || logout_lnk){
-
+          cloader.remove();
           if(login_lnk){
             for (let i = 0; i < login_lnk.length; i++) {
               if(login_lnk[i].lastChild.firstChild.innerText === 'Login'){
@@ -629,7 +634,7 @@ const utils = {
                 login_lnk[i].addEventListener('click', function(){
                   setTimeout(function(){
                     utils.emptySync(rs);
-                    rs.append(utils.add_comments(id,x,rs));
+                    rs.append(utils.add_comments(id,title,x,rs));
                   },5000)
                 })
               }
@@ -652,7 +657,7 @@ const utils = {
                       if(cnt === clen){
                         cl('all comments personal data cleaned.')
                         utils.emptySync(rs);
-                        rs.append(utils.add_comments(id,x,rs))
+                        rs.append(utils.add_comments(id,title,x,rs))
                       }
                   }).catch(function(err){
                     cl(err)
@@ -703,7 +708,9 @@ const utils = {
             utils.emptySync(rs);
             if(cto < 10){
               ss.set('cto', cto++)
-              rs.append(utils.add_comments(id,x,rs));
+              rs.append(utils.add_comments(id,title,x,rs));
+            } else {
+              rs.append(h('p.text-danger', 'max timeout retry attempts reached.'))
             }
 
           },5000)
@@ -713,9 +720,10 @@ const utils = {
 
     }
 
-    return frame;
-
-
+    return h('div',
+      cloader,
+      frame
+    );
 
   },
   clean_comments: function(doc){
@@ -727,6 +735,37 @@ const utils = {
     doc.querySelectorAll('.idc-i > em > a').forEach(function(ele){
       ele.removeAttribute('href')
     });
+
+  },
+  comment_count: function(){
+    fetch('https://www.intensedebate.com/widgets/blogStats/417295', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/javascript',
+        'Accept-Encoding': 'gzip',
+        'Sec-Fetch-Dest': 'object',
+        'Sec-Fetch-mode': 'cors',
+        'Sec-Fetch-Site': 'cross-site'
+      }
+    })
+    .then(function(res){
+      if (res.status >= 200 && res.status < 300) {
+        cl(res)
+        return res.text();
+      } else {
+        return Promise.reject(new Error(res.statusText))
+      }
+    })
+    .then(function(data) {
+      let obj = {
+        comments: parseInt(data.split('<strong>')[1].split('</strong>')[0].trim()),
+        users: parseInt(data.split('<strong>')[2].split('</strong>')[0].trim())
+      }
+      cl(obj)
+    })
+    .catch(function(err){
+      cl(err)
+    })
 
   }
 }

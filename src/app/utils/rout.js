@@ -119,7 +119,14 @@ const rout = {
     search_res = h('div.container',
       h('div.row',
         h('div.col-md-6',
-          h('h2', 'News')
+          h('h2', 'News',
+            h('button.btn.btn-outline-success.float-right',{
+              type: 'button',
+              onclick: function(){
+                window.dispatchEvent(new Event('hashchange'));
+              }
+            }, h('i.mr-2.icon-redo-alt'), 'Refresh')
+          )
         ),
         h('div.col-md-6',
           h('div.form-group.mb-4',

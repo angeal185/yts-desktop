@@ -7,6 +7,7 @@ urls = require('./urls'),
 rout = require('./rout'),
 {ls,ss} = require('./storage'),
 lightbox = require('./lightbox'),
+Magnet2torrent = require('magnet2torrent-js'),
 sp = require('../db/staff_popular');
 
 let cnt = 0;
@@ -56,7 +57,8 @@ const tpl = {
 
     window.addEventListener('lb-open', function(evt){
       evt = evt.detail;
-      img.firstChild.src = [config.yts_url, urls.img, [evt, urls.cover_l].join('/')].join('/')
+      cl(evt)
+      img.src = [config.yts_url, urls.img, [evt, urls.cover_l].join('/')].join('/')
       lbox.classList.remove('hidden');
     }, false)
 
@@ -614,7 +616,12 @@ const tpl = {
       )
     ),
     comments_div = h('div.iframe-container');
-    comments_div.append(utils.add_comments(obj.imdb_code, 'movie', comments_div))
+    if(ss.get('is_online')){
+      comments_div.append(utils.add_comments(obj.imdb_code, obj.title, 'movie', comments_div))
+    } else {
+      comments_div.append(h('p.text-warning', 'cannot access comments offline'))
+    }
+
 
     if(img_cache.value().indexOf(obj.img) !== -1){
       m_img = urls.cache_jpg.replace('{{id}}', obj.img);
@@ -760,22 +767,33 @@ const tpl = {
             hash_arr.push(obj.torrents[i].hash)
             let txt = [obj.torrents[i].quality, obj.torrents[i].type].join(' ');
             lnks.append(h('button.btn.btn-outline-success.mr-2.mb-2.sh-95', {
-              target: '_blank',
               onclick: function(evt){
                 let $this = this;
-                cl(evt)
-                utils.add_spn($this.lastChild, 'Downloading...');
-                window.location = [config.yts_url, urls.torrent, obj.torrents[i].hash].join('/');
-                setTimeout(function(){
-                  utils.remove_spn($this.lastChild, txt)
-                },1000)
+
+                utils.add_spn($this.lastChild, 'Generating...');
+
+                const m2t = new Magnet2torrent({
+                    trackers: config.trackers,
+                    addTrackersToTorrent: true
+                });
+
+                m2t.getTorrent(obj.torrents[i].hash).then(function(torrent){
+                    let dest = './downloads/torrent/'+ torrent.name +'.torrent';
+                    fs.writeFile(dest, torrent.toTorrentFile(), function(err){
+                      if(err){
+                        utils.toast('danger', 'torrent gen failed')
+                      } else {
+                        utils.toast('success', 'torrent gen success')
+                      }
+                      utils.remove_spn($this.lastChild, txt);
+                    });
+                }).catch(function(e){
+                    utils.toast('danger', 'torrent gen failed')
+                    utils.remove_spn($this.lastChild, txt);
+                });
+
               },
-              title: [
-                'size: '+ obj.torrents[i].size,
-                'peers: '+ obj.torrents[i].peers,
-                'seeds: '+ obj.torrents[i].seeds,
-              ].join(' / '),
-              rel: 'nofollow'
+              title: 'size: '+ obj.torrents[i].size
             }, h('span', txt)))
           }
           return lnks;
@@ -801,11 +819,7 @@ const tpl = {
                   utils.remove_spn($this.lastChild, txt)
                 },1000)
               },
-              title: [
-                'size: '+ obj.torrents[i].size,
-                'peers: '+ obj.torrents[i].peers,
-                'seeds: '+ obj.torrents[i].seeds,
-              ].join(' / '),
+              title: 'size: '+ obj.torrents[i].size,
               rel: 'nofollow'
             }, h('span', txt)))
           }

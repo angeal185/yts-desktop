@@ -8,6 +8,7 @@ _ = require('lodash'),
 h = require('./utils/h'),
 { ls,ss } = require('./utils/storage'),
 utils = require('./utils'),
+urls = require('./utils/urls'),
 gz = require('./utils/gzip'),
 sp = require('./db/staff_popular'),
 fs = require('fs');
@@ -17,8 +18,10 @@ const build = require('../../build');
 
 //let x = movie_db.value();
 
+
 //cl(x[0])
 //status_db.get('news_db').assign({hash: ''}).write();
+
 
 ipcRenderer.on('dl-stat', function(event, res){
   cl('dl_hit')
@@ -107,6 +110,9 @@ window.onload = function(evt){
 }
 
 /*
+
+
+
 
 function sha512(data){
   return crypto.createHash('sha512').update(data).digest('hex');

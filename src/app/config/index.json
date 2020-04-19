@@ -3,6 +3,7 @@
   "base_url": "https://yts.mx/api/v2/",
   "yts_url": "https://yts.mx",
   "sub_url": "https://www.yifysubtitles.com",
+  "imdb_reviews": "https://www.imdb.com/title/{{id}}/reviews",
   "trailer_url": "https://www.youtube.com/embed/{{id}}",
   "settings": {
     "dev": true,
@@ -261,36 +262,34 @@
       "autoplayPolicy": "no-user-gesture-required"
     }
   },
-  "CSS": "main.min.css",
-  "comment_CSS": "comments.min.css",
   "fontface": [
     {
       "name": "ico",
-      "path": "/app/static/fonts/ico.woff2",
+      "path": "ico.woff2",
       "style": "normal",
       "weight": 400
     },
     {
       "name": "Arimo",
-      "path": "/app/static/fonts/arimo/italic_400.woff2",
+      "path": "arimo/italic_400.woff2",
       "style": "italic",
       "weight": 400
     },
     {
       "name": "Arimo",
-      "path": "/app/static/fonts/arimo/bold_italic_700.woff2",
+      "path": "arimo/bold_italic_700.woff2",
       "style": "italic",
       "weight": 700
     },
     {
       "name": "Arimo",
-      "path": "/app/static/fonts/arimo/regular_400.woff2",
+      "path": "arimo/regular_400.woff2",
       "style": "normal",
       "weight": 400
     },
     {
       "name": "Arimo",
-      "path": "/app/static/fonts/arimo/bold_700.woff2",
+      "path": "arimo/bold_700.woff2",
       "style": "normal",
       "weight": 700
     }
@@ -324,7 +323,7 @@
   },
   "comments": {
     "url": "https://www.intensedebate.com",
-    "cid": "1b14f3d9059d7deb43a8578670acb0ac",
+    "cid": "42474d54bf68346d25c9c1822dfcf691",
     "post_url": "https://angeal185.github.io/yts-comments",
     "api": "/js/genericCommentWrapperV2.js"
   }
