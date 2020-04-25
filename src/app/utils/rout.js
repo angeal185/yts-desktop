@@ -3,12 +3,11 @@ fs = require('fs'),
 tpl = require('./tpl'),
 h = require('./h'),
 _ = require('lodash'),
-s_db = require('../db/staff_db'),
-news_db = require('../db/news_db'),
 pagination = require('./pagination'),
-{ls,ss} = require('./storage');
-
-const Glide = require('./glide')
+enc = require('./enc'),
+urls = require('./urls'),
+{ls,ss} = require('./storage'),
+Glide = require('./glide');
 
 const rout = {
   home: function(dest){
@@ -99,22 +98,123 @@ const rout = {
   },
   contact: function(dest){
 
-    let i = h('iframe', {
-          src: 'https://www.foxyform.com/form.php?id=958567&sec_hash=02af845bf05',
-          frameBorder: 0
-        });
+    if(ls.get('id') && ls.get('id') !== '' && ss.get('is_online') === true){
+      let keypair = db.get('rsa_oaep').value(),
+      contact_base = h('div'),
+      plain_res = h('textarea.form-control.inp-dark.mb-2',{
+        placeholder: 'secure message',
+        readOnly: true,
+        rows: 5
+      }),
+      key_res = h('textarea.form-control.inp-dark.mb-2',{
+        placeholder: 'secure message',
+        readOnly: true,
+        rows: 5
+      }),
+      obj = {};
 
+      utils.fetch(config.contact.config, function(err,res){
+        if(err || !res.rsa_oaep || typeof res.rsa_oaep !== 'object'){
+          return cl('cannot fetch contact data')
+        }
 
-    dest.append(
-      h('div.embed-responsive', i)
-    )
+        let yts_public = res.rsa_oaep,
+        create_msg = h('div.row.hidden',
+          h('div.col-12',
+            h('h4', 'Create messege')
+          ),
+          h('div.col-md-6',
+            h('div.form-group',
+              h('input.form-control.inp-dark.mb-2',{
+                placeholder: 'name',
+                onkeyup: utils.debounce(function(evt) {
+                  obj.name = evt.target.value;
+                  enc.enc_contact(obj, plain_res, key_res, yts_public, keypair);
+                },2000)
+              }),
+              h('input.form-control.inp-dark.mb-2',{
+                placeholder: 'subject',
+                onkeyup: utils.debounce(function(evt) {
+                  obj.subject = evt.target.value;
+                  enc.enc_contact(obj, plain_res, key_res, yts_public, keypair);
+                },2000)
+              }),
+              h('input.form-control.inp-dark.mb-2',{
+                placeholder: 'email',
+                type: 'email',
+                onkeyup: utils.debounce(function(evt) {
+                  obj.email = evt.target.value;
+                  enc.enc_contact(obj, plain_res, key_res, yts_public, keypair);
+                },2000)
+              }),
+              h('textarea.form-control.inp-dark.mb-2',{
+                placeholder: 'plaintext message',
+                rows: 10,
+                onkeyup: utils.debounce(function(evt) {
+                  obj.msg = evt.target.value;
+                  enc.enc_contact(obj, plain_res, key_res, yts_public, keypair);
+                },2000)
+              })
+            )
+          ),
+          h('div.col-md-6',
+            h('div.form-group',
+              h('label', 'encrypted message'),
+              plain_res
+            ),
+            h('div.form-group',
+              h('label', 'reply key'),
+              key_res
+            )
+          )
+        ),
+        read_msg = h('div.row.hidden',
+          h('div.col-12',
+            h('h4', 'Read messege')
+          )
+        )
+
+        contact_base.append(
+          h('div.row',
+            h('div.col-6',
+              h('button.btn.btn-block.btn-outline-success.mb-2.sh-95', {
+                onclick: function(){
+                  read_msg.classList.add('hidden');
+                  create_msg.classList.remove('hidden');
+                }
+              },'Create message'),
+            ),
+            h('div.col-6',
+              h('button.btn.btn-block.btn-outline-success.mb-2.sh-95', {
+                onclick: function(){
+                  create_msg.classList.add('hidden');
+                  read_msg.classList.remove('hidden');
+                }
+              },'Read message'),
+            ),
+            h('div.col-12',
+              h('hr.w-100.mb-4')
+            )
+          ),
+          create_msg,
+          read_msg
+        )
+
+        dest.append(contact_base)
+
+      })
+    } else {
+      dest.append(h('p', 'offline while offline.'))
+    }
+
 
   },
   news: function(dest){
 
     ss.set('pag-current', 1)
 
-    let pag_view_main = h('div#pag_view_main.container'),
+    let news_db = jp(fs.readFileSync(base_dir + urls.news_db), 'utf8'),
+    pag_view_main = h('div#pag_view_main.container'),
     pag_div = h('div#pagination.row'),
     search_res = h('div.container',
       h('div.row',
@@ -153,8 +253,6 @@ const rout = {
                   } else {
                     pag_view_main.append(h('h5', 'No items found...'))
                   }
-
-
                 }
               },1000)
             })
@@ -252,8 +350,9 @@ const rout = {
     location.hash = 'search/popular';
   },
   cast: function(dest){
-    ss.set('cdw_search', 'cast')
-    let c_div = h('div.card.bg-dark.bd-dark.mb-4',
+    ss.set('cdw_search', 'cast');
+    let s_db = jp(fs.readFileSync(base_dir + urls.staff_db, 'utf8')),
+    c_div = h('div.card.bg-dark.bd-dark.mb-4',
       h('div.card-body.text-center')
     ),
     d_div = c_div.cloneNode(true),
@@ -288,9 +387,7 @@ const rout = {
                     }
                   }
                 }
-
               }
-
             }, 1000)
           })
         ),
@@ -504,7 +601,7 @@ const rout = {
           h('input.form-control.inp-dark.mb-2',{
             readOnly: true,
             value: function(){
-              return utils.formatBytes(fs.statSync(base_dir + '/app/cache/subs').size)
+              return utils.formatBytes(fs.statSync([base_dir, urls.subs].join('/')).size)
             }
           }),
           h('label', 'subtitles cache count'),
@@ -551,7 +648,6 @@ const rout = {
             h('button.btn.btn-outline-success',{
               type: 'button',
               onclick: function(){
-                cl(obj)
 
                 if(typeof obj.limit === 'string'){
                   obj.limit = parseInt(obj.limit);

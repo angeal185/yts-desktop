@@ -1,46 +1,76 @@
-const fs = require('fs'),
+const { ipcRenderer } = require('electron'),
+session = require('electron').remote.session,
+Cookies = session.defaultSession.cookies,
+fs = require('fs'),
 h = require('./h'),
 _ = require('lodash'),
 config = require('../config'),
 rout = require('./rout'),
-request = require('request'),
-{ ipcRenderer } = require('electron'),
-session = require('electron').remote.session,
-Cookies = session.defaultSession.cookies,
-execFile = require('child_process').execFile,
-news_db = require('../db/news_db'),
 tpl = require('./tpl'),
 urls = require('./urls'),
+enc = require('./enc'),
 scrap = require('./scrap'),
-styles = require('./styles'),
 {ls,ss} = require('./storage');
 
 const utils = {
   pre: function(doc, cb){
     try {
-
-      for (let i = 0; i < config.fontface.length; i++) {
-        utils.add_font(window, config.fontface[i], doc);
+      let fonts = jp(fs.readFileSync(base_dir + urls.fonts, 'utf8'));
+      for (let i = 0; i < fonts.length; i++) {
+        utils.add_font(window, fonts[i], doc);
       }
+
+      fonts = null;
 
       utils.add_styles(window, doc, 'main');
 
-      if(!ls.get('suggest')){
-        ls.set('suggest', []);
-      }
-
-      return cb(false);
+      utils.base_img_cache(function(err){
+        if(err){return utils.toast('danger', err)}
+        if(!ls.get('suggest')){
+          ls.set('suggest', []);
+        }
+        return cb(false);
+      });
     } catch (err) {
       if(err){return cb(err);}
     }
   },
+  base_img_cache: function(cb){
+
+    fs.readFile(base_dir + urls.imgs, 'utf8', function(err, img){
+      if(err){return cb('base_img_cache error')}
+      img = jp(img);
+
+      let arr = config.base_img_cache,
+      imgtype;
+
+      for (let i = 0; i < arr.length; i++) {
+        if(arr[i] !== 'logo'){
+          imgtype = 'img/png'
+        } else {
+          imgtype = 'image/svg+xml'
+        }
+        base_img_cache[arr[i]] = URL.createObjectURL(new Blob(
+          [new Uint8Array(Buffer.from(img[arr[i]], 'base64'))],
+          {type: imgtype}
+        ))
+      }
+      img = null;
+      cb(false);
+    })
+  },
   add_styles: function(win, doc, styl){
-    let sheet = new win.CSSStyleSheet();
+    let styles = jp(fs.readFileSync(base_dir + urls.styles, 'utf8')),
+    sheet = new win.CSSStyleSheet();
+
     sheet.replaceSync(styles[styl]);
     doc.adoptedStyleSheets = [sheet];
+    styles = null;
+    return;
   },
   add_font: function(win, obj, doc){
-    let buff = new Uint8Array(fs.readFileSync([base_dir, urls.fonts, obj.path].join('/'))).buffer;
+    let buff = new Uint8Array(Buffer.from(obj.data, 'base64')).buffer;
+
     buff = new win.FontFace(obj.name, buff, {
       style: obj.style,
       weight: obj.weight
@@ -54,8 +84,8 @@ const utils = {
 
   },
   update_settings: function(cnf){
-    fs.writeFileSync(base_dir + '/app/config/index.json', JSON.stringify(cnf,0,2));
-    require.cache[base_dir + '/app/config/index.json'].exports = cnf;
+    fs.writeFileSync(base_dir + urls.config, js(cnf,0,2));
+    require.cache[base_dir + urls.config].exports = cnf;
     utils.toast('success', 'Settings updated');
   },
   update_db: function(res){
@@ -82,6 +112,7 @@ const utils = {
 
   },
   cache_img: function(url){
+    cl('cach img')
     ipcRenderer.send('dl-img', url)
   },
   cache_img_reset: function(){
@@ -98,52 +129,72 @@ const utils = {
       i.removeChild(i.firstChild);
     }
   },
-  init: function(doc){
-    let main = tpl.base();
-    doc.body.append(
-      main
-    )
+  init: function(doc, cb){
+    try {
+      let main = tpl.base();
+      doc.body.append(
+        main
+      )
 
-    main = main.lastChild;
+      main = main.lastChild;
 
-    window.addEventListener('hashchange', function() {
-      if( location.origin !== 'file://'){
-        return;
-      }
-      let dest = location.hash.slice(1).split('/');
-
-      if(dest[0] === 'movie'){
-        ss.set('mov_id', dest[1]);
-      }
-
-      if(dest[0] === 'news'){
-        let news_res;
-        if(dest.length === 1){
-          news_res = _.chunk(_.orderBy(news_db ,['date'], ['desc']), 10)
-          pag_db.set('search', news_res).write();
+      window.addEventListener('hashchange', function() {
+        if(location.origin !== 'file://'){
+          return;
+        }
+        let dest = location.hash.slice(1).split('/');
+        cl(dest[0])
+        if(['news', 'movie', 'search'].indexOf(dest[0]) === -1){
+          if(pag_db.value().length > 0){
+            pag_db.set('search', []).write();
+          }
         } else {
-          news_res = _.filter(news_db, function(i){
-            return i[dest[1]] === dest[2];
-          })
-          news_res = _.chunk(_.orderBy(news_res ,['date'], ['desc']), 10)
-          cl(news_res)
-          pag_db.set('search', news_res).write();
+
+          if(dest[0] === 'movie'){
+            ss.set('mov_id', dest[1]);
+          }
+
+          if(dest[0] === 'news'){
+
+            let news_db = jp(fs.readFileSync(base_dir + urls.news_db), 'utf8'),
+            news_res;
+
+            if(dest.length === 1){
+              news_res = _.chunk(_.orderBy(news_db ,['date'], ['desc']), 10)
+              pag_db.set('search', news_res).write();
+            } else {
+              news_res = _.filter(news_db, function(i){
+                return i[dest[1]] === dest[2];
+              })
+              news_res = _.chunk(_.orderBy(news_res ,['date'], ['desc']), 10)
+              cl(news_res)
+              pag_db.set('search', news_res).write();
+            }
+
+            news_db = null;
+
+          }
+
         }
 
+        utils.empty(main, function(){
+          ss.set('dest', dest[0]);
+          rout[dest[0]](main);
+          utils.totop(0);
+        });
+
+      }, false);
+
+      if(location.hash !== '#home'){
+        location.hash = 'home';
+      } else {
+        ss.set('dest', 'home');
+        rout['home'](main);
       }
-
-      utils.empty(main, function(){
-        ss.set('dest', dest[0]);
-        rout[dest[0]](main);
-        utils.totop(0);
-      });
-    }, false);
-
-    if(location.hash !== '#home'){
-      location.hash = 'home';
-    } else {
-      ss.set('dest', 'home');
-      rout['home'](main);
+      cb(false)
+    } catch (err){
+      ce(err)
+      cb('fatal error')
     }
 
   },
@@ -261,6 +312,23 @@ const utils = {
      if(err){return str;}
    }
   },
+  set_id: function(cb){
+    utils.fetch(urls.id, function(err,res){
+      if(err){return cb(err)}
+      let tst = res.ip.split('.');
+      if(tst && tst.length === 4){
+        for (let i = 0; i < tst.length; i++) {
+          if(typeof parseInt(tst) !== 'number'){
+            return cb('invalid id')
+          }
+        }
+        ls.set('id', enc.hex_enc(res.ip))
+        return cb(false)
+      } else {
+        return cb('invalid id')
+      }
+    })
+  },
   fetch: function(url, cb){
     fetch(url, {
       method: 'GET',
@@ -333,7 +401,6 @@ const utils = {
       return x.title.toLowerCase().includes(term)
     }).slice(0,5).value();
 
-
     window.dispatchEvent(
       new CustomEvent('quick_search', {
         detail: res
@@ -352,9 +419,107 @@ const utils = {
 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   },
+  check_hit: function(id){
+    try {
+      let items = ls.get('hit_items');
+      for (let i = 0; i < items.length; i++) {
+        if(items[i].id === id){
+          return items[i];
+        }
+      }
+      return false
+    } catch (err) {
+      if(err){return false}
+    }
+  },
+  store_hit: function(id, sel, val){
+    try {
+      let items = ls.get('hit_items') || [],
+      exists = false;
+
+      for (let i = 0; i < items.length; i++) {
+        if(items[i].id === id){
+          items[i][sel] = val;
+          exists = true;
+        }
+      }
+
+      if(exists === false){
+        let obj = {
+          id: id
+        }
+        obj[sel] = val
+        items.push(obj)
+      }
+
+      ls.set('hit_items', items);
+    } catch (err) {
+      if(err){return ce(err)}
+    }
+  },
+  init_hit: function(){
+    let h_check = ls.get('hit_items')
+    if(
+      h_check &&
+      typeof h_check === 'object' &&
+      ls.get('hit_items_date') &&
+      ls.get('hit_items_date') > Date.now()
+    ){
+      return
+    }
+
+    ls.set('hit_items', []);
+    ls.set('hit_items_date', Date.now() + 3600000);
+
+  },
+  get_hit_count: function(is_count, cnt_type,  id, cb){
+    let dest;
+
+    if(is_count === false){
+      is_count = 'count';
+    } else {
+      is_count = 'add';
+    }
+
+    dest = [urls.counter, is_count].join('/');
+
+    fetch(dest, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Sec-Fetch-Dest': 'object',
+        'Sec-Fetch-mode': 'cors',
+        'Sec-Fetch-Site': 'cross-site'
+      },
+      body: js({
+        id: id,
+        sel: cnt_type,
+        api: config.api.ptk
+      })
+    })
+    .then(function(res){
+      if (res.status >= 200 && res.status < 300) {
+        return res.text();
+      } else {
+        return Promise.reject(new Error(res.statusText))
+      }
+    })
+    .then(function(res) {
+
+      if(typeof parseInt(res) === 'number'){
+        utils.store_hit(id, cnt_type, res)
+        cb(false, res)
+      } else {
+        cb(true)
+      }
+    })
+    .catch(function(err){
+      cb(true)
+    })
+  },
   imdb_spec: function(id, cb){
 
-      fetch('https://m.imdb.com/title/'+ id, {
+      fetch([urls.imdb, 'title', id].join('/'), {
         method: 'GET',
         headers: {
           'Content-Type': 'text/html',
@@ -447,7 +612,7 @@ const utils = {
   },
   rt_spec: function(ttl, cb){
 
-    let api_url = 'https://www.rottentomatoes.com/api/private/v2.0/search?limit=1&q=' + ttl.split(' ').join('+');
+    let api_url = urls.rt + '/api/private/v2.0/search?limit=1&q=' + ttl.split(' ').join('+');
 
     fetch(api_url, {
       method: 'GET',
@@ -473,7 +638,7 @@ const utils = {
         return cb(true)
       }
 
-      fetch("https://www.rottentomatoes.com"+ data.url, {
+      fetch(urls.rt + data.url, {
         method: 'GET',
         headers: {
           'Content-Type': 'text/html',
@@ -561,7 +726,7 @@ const utils = {
     staff_db.directors = staff_db.directors.sort();
     staff_db.writters = staff_db.writters.sort();
 
-    fs.writeFile(base_dir +'/app/db/staff_db.json', js(staff_db), function(err){
+    fs.writeFile(base_dir + urls.staff_db, js(staff_db), function(err){
       if(err){return cb('failed to update staff_db')}
       cb(false)
     })
@@ -607,9 +772,16 @@ const utils = {
       win.idcomments_post_title = title;
       win.idcomments_post_url = [config.comments.post_url, x, id].join('/');
 
-      for (let i = 0; i < config.fontface.length; i++) {
-        utils.add_font(win, config.fontface[i], doc);
+      let fonts = jp(fs.readFileSync(base_dir + urls.fonts, 'utf8'));
+
+      for (let i = 0; i < fonts.length; i++) {
+        if(fonts[i].name !== 'ico'){
+          utils.add_font(win, fonts[i], doc);
+        }
       }
+
+      fonts = null;
+
       utils.add_styles(win, doc, 'comments')
 
       doc.body.append(spn);
@@ -738,7 +910,7 @@ const utils = {
 
   },
   comment_count: function(){
-    fetch('https://www.intensedebate.com/widgets/blogStats/417295', {
+    fetch(urls.comments + '/widgets/blogStats/417295', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/javascript',

@@ -50,7 +50,14 @@ db.defaults({
   history:[],
   saved: [],
   img_cache: [],
-  subs_cache: []
+  subs_cache: [],
+  likes: [],
+  dislikes:[],
+  reviews_cache: [],
+  rsa_oaep: {
+    public: null,
+    private: null
+  }
 }).write();
 
 yts_db.defaults({
@@ -67,14 +74,15 @@ global.his_db = db.get('history');
 global.save_db = db.get('saved');
 global.img_cache = db.get('img_cache');
 global.subs_cache = db.get('subs_cache');
+global.reviews_cache = db.get('reviews_cache');
 global.scrap_cnt = 0;
 global.update_cnt = 0;
 
 //global vars
 global.cl = console.log;
 global.ce = console.error;
-global.LS = localStorage;
-global.SS = sessionStorage;
+
+global.base_img_cache = {};
 
 global.headers = {
   json_cors: {
@@ -94,3 +102,5 @@ global.headers = {
     'Sec-Fetch-Site': 'cross-site'
   }
 }
+
+global.utils = require('./index');

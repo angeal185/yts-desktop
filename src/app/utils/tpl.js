@@ -2,13 +2,12 @@ const config = require('../config'),
 fs = require('fs'),
 h = require('./h'),
 _ = require('lodash'),
-request = require('request'),
 urls = require('./urls'),
 rout = require('./rout'),
 {ls,ss} = require('./storage'),
 lightbox = require('./lightbox'),
-Magnet2torrent = require('magnet2torrent-js'),
-sp = require('../db/staff_popular');
+enc = require('./enc'),
+Magnet2torrent = require('magnet2torrent-js');
 
 let cnt = 0;
 const tpl = {
@@ -18,7 +17,7 @@ const tpl = {
         h('div.col-md-3.col-6',
           h('div.navbar-brand',
             h('img.nav_logo',{
-              src:config.settings.logo
+              src: base_img_cache.logo
             })
           )
         ),
@@ -57,7 +56,6 @@ const tpl = {
 
     window.addEventListener('lb-open', function(evt){
       evt = evt.detail;
-      cl(evt)
       img.src = [config.yts_url, urls.img, [evt, urls.cover_l].join('/')].join('/')
       lbox.classList.remove('hidden');
     }, false)
@@ -171,7 +169,6 @@ const tpl = {
       utils.is_offline(online_globe);
     })
 
-
     window.addEventListener('db-status',  function(evt){
       evt = evt.detail;
       if(evt === 1){
@@ -221,7 +218,7 @@ const tpl = {
     let sb_body = h('div.sb-body',
       h('div.sb-head',
         h('img.nav_logo',{
-          src:config.settings.logo
+          src: base_img_cache.logo
         })
       ),
       h('div.sb-lnks')
@@ -348,15 +345,58 @@ const tpl = {
       )
     )
   },
-  item_post: function(obj){
-    let genre = h('div'),
-    b_img = urls.bg_med,
+  img_cache_check: function(obj, m_img, b_img, c_img){
+
+    if(config.settings.img_cache){
+      if(img_cache.value().indexOf(obj.img) === -1){
+        if(ss.get('is_online')){
+          m_img.src = c_img;
+          m_img.onload = function(ele){
+            utils.cache_img(c_img)
+          }
+          m_img.onerror = function(evt){
+            evt.target.src = b_img;
+          }
+        } else {
+          m_img.src = b_img;
+        }
+      } else {
+        m_img.src = urls.cache_jpg.replace('{{id}}', obj.img);
+        m_img.onerror = function(evt){
+          utils.cache_img(c_img)
+          evt.target.src = b_img;
+        }
+      }
+    } else {
+      if(ss.get('is_online')){
+        m_img.src = c_img;
+        m_img.onerror = function(evt){
+          evt.target.src = b_img;
+        }
+      } else {
+        m_img.src = b_img;
+      }
+    }
+
+    return m_img;
+  },
+  img_cache_item: function(obj){
+
+    let b_img = base_img_cache.bg_med,
     c_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/'),
     m_img = h('img.img-fluid',{
       alt: obj.title,
       width: 210,
       height: 315
     })
+
+    m_img = tpl.img_cache_check(obj, m_img, b_img, c_img)
+
+    return m_img
+  },
+  item_post: function(obj){
+    let genre = h('div');
+
     if(obj.genres){
       for (let i = 0; i < 2; i++) {
         if(obj.genres[i]){
@@ -365,28 +405,11 @@ const tpl = {
       }
     }
 
-    if(config.settings.img_cache){
-      if(img_cache.value().indexOf(obj.img) === -1){
-        m_img.src = c_img;
-        m_img.onload = function(ele){
-          utils.cache_img(c_img)
-        }
-      } else {
-        m_img.src = urls.cache_jpg.replace('{{id}}', obj.img);
-      }
-      m_img.onerror = function(evt){
-        evt.target.src = b_img;
-      }
-    } else {
-      m_img.src = c_img;
-    }
-
-
     return h('div.col-xs-12.col-sm-6.col-md-3.text-center',
       h('div.browse-movie-wrap',
         h('div.browse-movie-link',
           h('figure',
-            m_img
+            tpl.img_cache_item(obj)
           ),
           h('figcaption.hidden-xs.hidden-sm',
             h('span.icon-star'),
@@ -409,14 +432,8 @@ const tpl = {
 
   },
   item_glide: function(obj){
-    let genre = h('div'),
-    b_img = urls.bg_med,
-    c_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/'),
-    m_img = h('img.img-fluid',{
-      alt: obj.title,
-      width: 210,
-      height: 315
-    })
+    let genre = h('div');
+
     if(obj.genres){
       for (let i = 0; i < 2; i++) {
         if(obj.genres[i]){
@@ -425,28 +442,11 @@ const tpl = {
       }
     }
 
-    if(config.settings.img_cache){
-      if(img_cache.value().indexOf(obj.img) === -1){
-        m_img.src = c_img;
-        m_img.onload = function(ele){
-          utils.cache_img(c_img)
-        }
-      } else {
-        m_img.src = urls.cache_jpg.replace('{{id}}', obj.img);
-      }
-      m_img.onerror = function(evt){
-        evt.target.src = b_img;
-      }
-    } else {
-      m_img.src = c_img;
-    }
-
-
     return h('div.glide__slide.text-center',
       h('div.browse-movie-wrap',
         h('div.browse-movie-link',
           h('figure',
-            m_img
+            tpl.img_cache_item(obj)
           ),
           h('figcaption.hidden-xs.hidden-sm',
             h('span.icon-star'),
@@ -470,16 +470,6 @@ const tpl = {
   },
   item_sel: function(obj, sel){
     let genre = h('div'),
-    b_img = urls.bg_med,
-    c_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/'),
-    m_img = h('img.img-fluid',{
-      alt: obj.title,
-      width: 210,
-      height: 315,
-      onerror: function(evt){
-        evt.target.src = b_img;
-      }
-    }),
     item;
 
     if(obj.genres){
@@ -490,24 +480,11 @@ const tpl = {
       }
     }
 
-    if(config.settings.img_cache){
-      if(img_cache.value().indexOf(obj.img) === -1){
-        m_img.src = c_img;
-        m_img.onload = function(ele){
-          utils.cache_img(c_img)
-        }
-      } else {
-        m_img.src = urls.cache_jpg.replace('{{id}}', obj.img);
-      }
-    } else {
-      m_img.src = c_img;
-    }
-
     item = h('div.col-xs-12.col-sm-6.col-md-3.text-center',
       h('div.browse-movie-wrap',
         h('div.browse-movie-link',
           h('figure',
-            m_img
+            tpl.img_cache_item(obj)
           ),
           h('figcaption.hidden-xs.hidden-sm',
             h('span.icon-star'),
@@ -546,7 +523,7 @@ const tpl = {
     if(!obj){
       return h('span')
     }
-    let b_img = urls.bg_med,
+    let b_img = base_img_cache.bg_med,
     c_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/'),
     m_img = h('img.img-fluid',{
       alt: obj.title,
@@ -559,18 +536,7 @@ const tpl = {
       }
     })
 
-    if(config.settings.img_cache){
-      if(img_cache.value().indexOf(obj.img) === -1){
-        m_img.src = c_img;
-        m_img.onload = function(ele){
-          utils.cache_img(c_img)
-        }
-      } else {
-        m_img.src = urls.cache_jpg.replace('{{id}}', obj.img);
-      }
-    } else {
-      m_img.src = c_img;
-    }
+    m_img = tpl.img_cache_check(obj, m_img, b_img, c_img);
 
     return h('div.col-6.text-center',
       h('div.browse-movie-link.bc-hov.mb-4.cp',
@@ -581,7 +547,7 @@ const tpl = {
   },
   ico_col: function(title,ico,data){
     return h('div.col-3.mb-2', {title: title},
-      h('i.icon-'+ ico +'.mr-2.mb-2.text-success'),
+      h('i.icon-'+ ico +'.mr-2.mb-2.text-success.ch'),
       data || 'N/A'
     )
   },
@@ -592,42 +558,125 @@ const tpl = {
     scrap_cnt = 0,
     c_div = h('div'),
     rev_div = h('div.hidden'),
-    b_img = urls.bg_lg,
-    m_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/'),
+    b_img = base_img_cache.bg_med,
     sub_div = h('div.list-group'),
     syn = h('div.card', h('div.card-body', obj.synopsis)),
-    tr_div = h('div.trailer-div.hidden.mt-4',
-      tpl.yt_trailer(obj.yt_trailer_code)
-    ),
+    tr_div = h('div.trailer-div.hidden.mt-4'),
     ico_row = h('div.row',
       tpl.ico_col('IMDB rating', 'imdb', obj.rating),
       tpl.ico_col('IMDB votes', 'comments', obj.votes),
       tpl.ico_col('Runtime', 'clock', obj.runtime +'min'),
-      tpl.ico_col('MPA rating', 'eye', obj.mpa_rating),
+      tpl.ico_col('MPA rating', 'eye-off', obj.mpa_rating),
       tpl.ico_col('Metacritic rating', 'metacritic', obj.metascore),
       tpl.ico_col('Cumulative Gross', 'dollar', obj.gross),
       tpl.ico_col('Upload date', 'cloud-upload-alt', utils.format_date(obj.date_uploaded)),
       tpl.ico_col('Release date', 'calendar', obj.published),
       tpl.ico_col('Language', 'language', obj.language)
     ),
-    torrent_spec = h('div',
-      h('h4.text-success', 'Fetching torrent specs...',
-        h('span.spinner-grow.spinner-grow-sm.ml-2.sp-lg.float-right')
-      )
-    ),
-    comments_div = h('div.iframe-container');
-    if(ss.get('is_online')){
-      comments_div.append(utils.add_comments(obj.imdb_code, obj.title, 'movie', comments_div))
-    } else {
-      comments_div.append(h('p.text-warning', 'cannot access comments offline'))
-    }
+    like_div = h('div.text-right'),
+    torrent_spec = h('div'),
+    reviews_div = h('div.list-group.hidden'),
+    comments_div = h('div.iframe-container'),
+    m_img;
 
+    if(ss.get('is_online')){
+      let like_cnt = h('span'),
+      dislike_cnt = like_cnt.cloneNode();
+
+      m_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/');
+      torrent_spec.append(h('h4.text-success', 'Fetching torrent specs...',
+        h('span.spinner-grow.spinner-grow-sm.ml-2.sp-lg.float-right')
+      ))
+      comments_div.append(utils.add_comments(obj.imdb_code, obj.title, 'movie', comments_div))
+
+      let check_hit = utils.check_hit(obj.imdb_code);
+
+      if(check_hit && check_hit.hits){
+        cl('loading hits from cache')
+        ico_row.append(tpl.ico_col('views', 'eye', check_hit.hits))
+      } else {
+        utils.get_hit_count(true, 0, obj.imdb_code, function(err,res){
+          if(!err){
+            ico_row.append(tpl.ico_col('views', 'eye', res))
+          }
+        })
+      }
+
+      if(check_hit && check_hit.likes){
+        cl('loading likes from cache')
+        like_cnt.innerText = check_hit.likes;
+        ico_row.append(tpl.ico_col('likes', 'thumbs-up', like_cnt))
+      } else {
+        utils.get_hit_count(false, 1, obj.imdb_code, function(err,res){
+          if(!err){
+            like_cnt.innerText = res;
+            ico_row.append(tpl.ico_col('likes', 'thumbs-up', like_cnt))
+          }
+        })
+      }
+
+      if(check_hit && check_hit.dislikes){
+        cl('loading dislikes from cache');
+        dislike_cnt.innerText = check_hit.dislikes;
+        ico_row.append(tpl.ico_col('dislikes', 'thumbs-down', dislike_cnt))
+      } else {
+        utils.get_hit_count(false, 2, obj.imdb_code, function(err,res){
+          if(!err){
+            dislike_cnt.innerText = res;
+            ico_row.append(tpl.ico_col('dislikes', 'thumbs-down', dislike_cnt))
+          }
+        })
+      }
+
+      like_div.append(
+        h('button.btn.btn-outline-success.mr-2.btn-sm.sh-95.mt-4', {
+          onclick: function(){
+            if(
+              db.get('likes').indexOf(obj.imdb_code).value() === -1 &&
+              db.get('dislikes').indexOf(obj.imdb_code).value() === -1
+            ){
+              utils.get_hit_count(true, 1, obj.imdb_code, function(err,res){
+                if(!err){
+                  like_cnt.innerText = res;
+                  db.get('likes').push(obj.imdb_code).write()
+                }
+              })
+            } else {
+              cl('already selected')
+            }
+          }
+        }, 'Like', h('i.icon-thumbs-up.ml-2')),
+        h('button.btn.btn-outline-success.btn-sm.sh-95.mt-4', {
+          onclick: function(){
+            if(
+              db.get('likes').indexOf(obj.imdb_code).value() === -1 &&
+              db.get('dislikes').indexOf(obj.imdb_code).value() === -1
+            ){
+              utils.get_hit_count(true, 2, obj.imdb_code, function(err,res){
+                if(!err){
+                  dislike_cnt.innerText = res;
+                  db.get('dislikes').push(obj.imdb_code).write()
+                }
+              })
+            } else {
+              cl('already selected')
+            }
+          }
+        },'Dislike', h('i.icon-thumbs-down.ml-1'))
+      )
+
+
+    } else {
+      m_img = b_img;
+      torrent_spec.append(h('p.text-warning', 'Torrent specs unavailable offline'))
+      comments_div.append(h('p.text-warning', 'Cannot access comments offline'))
+    }
 
     if(img_cache.value().indexOf(obj.img) !== -1){
       m_img = urls.cache_jpg.replace('{{id}}', obj.img);
     }
 
-    if(!obj.rt_percent && !obj.rt_audience){
+    if(!obj.rt_percent && !obj.rt_audience && ss.get('is_online')){
       utils.rt_spec(obj.title, function(err,res){
         if(err){return cl(err)}
         ico_row.append(
@@ -638,11 +687,13 @@ const tpl = {
             title: 'rottentomatoes audience rating'
           },h('i.icon-rt.mr-2.mb-2.text-success'), res.rt_audience || 'N/A')
         )
+
         obj.rt_percent = res.rt_percent || 'N/A';
         obj.rt_audience = res.rt_audience || 'N/A';
         movie_db.find({id: obj.id}).set(obj).write();
+
       })
-    } else {
+    } else if(obj.rt_percent || obj.rt_audience){
       cl('rt ratings found!')
       ico_row.append(
         h('div.col-3.mb-2', {
@@ -657,35 +708,41 @@ const tpl = {
 
     let item = h('div.row',
       h('div.col-sm-12.col-md-4.text-center',
-        h('img.img-fluid.lg-img.cp', {
+        h('img.img-fluid.lg-img.cz', {
           src: m_img || b_img,
           alt: obj.title,
           onerror: function(evt){
             evt.target.src = b_img;
           },
-          onclick: function(){
-
-            window.dispatchEvent(
-              new CustomEvent('lb-open', {
-                detail: obj.img
-              })
-            );
-
+          onload: function(evt){
+            if(ss.get('is_online')){
+              evt.target.onclick = function(){
+                window.dispatchEvent(
+                  new CustomEvent('lb-open', {
+                    detail: obj.img
+                  })
+                );
+              }
+            }
           }
         }),
         tr_div,
         h('button.btn.btn-outline-success.mt-3',{
           type: 'button',
           onclick: function(evt){
-            tr_div.classList.remove('hidden');
-            evt.target.remove();
+            if(ss.get('is_online')){
+              tr_div.append(tpl.yt_trailer(obj.yt_trailer_code))
+              tr_div.classList.remove('hidden');
+              evt.target.remove();
+            } else {
+              utils.toast('warning', 'Cannot view trailer offline')
+            }
           }
         }, h('span.mr-2.icon-play-circle'), 'Watch Trailer'),
         h('hr.mt-4'),
         h('h4.mb-4', 'Suggested movies'),
         function(){
           let item_row = h('div.row');
-
           for (let i = 0; i < obj.suggest.length; i++) {
             item_row.append(tpl.item_suggest(obj.suggest[i]))
           }
@@ -711,21 +768,16 @@ const tpl = {
             onclick: function(){
               let db_item = save_db.find({id: obj.id}).value();
               utils.add_spn(this.lastChild, 'Saving...')
-
               if(!db_item){
                 save_db.unshift(obj).write();
-
                 if(save_db.size().value() > config.settings.saved_max){
                   save_db.pop().write();
                 }
-
                 utils.toast('info', 'item saved to db');
-
               } else {
                 utils.toast('info', 'item already saved in db');
               }
               return utils.remove_spn(this.lastChild, 'Save')
-
             }
           }, h('i.mr-2.icon-star'), h('span','Save'))
         ),
@@ -759,6 +811,7 @@ const tpl = {
         },
         h('hr'),
         ico_row,
+        like_div,
         h('hr'),
         h('h6.text-success.w-100.mt-2', h('span.icon-cloud-download-alt.mr-2'),  'Torrent'),
         function(){
@@ -829,7 +882,7 @@ const tpl = {
         torrent_spec,
         h('hr.mb-4'),
         function(){
-          b_img = urls.bg_sm;
+          b_img = base_img_cache.bg_sm;
           let img_row = h('div.row'),
           sc_img = obj.img,
           d_img, l_img;
@@ -841,14 +894,18 @@ const tpl = {
             lb_arr.push([config.yts_url, urls.img, l_img].join('/'));
             img_row.append(
               h('div.col',
-                h('img.img-fluid.cp',{
+                h('img.img-fluid.cz',{
                   src: [config.yts_url, urls.img, d_img].join('/'),
-                  onclick: function(){
-                    lightbox.open();
-                    lightbox.currentSlide(i);
-                  },
                   onerror: function(evt){
                     evt.target.src = b_img;
+                  },
+                  onload: function(evt){
+                    if(ss.get('is_online')){
+                      evt.target.onclick = function(){
+                        lightbox.open();
+                        lightbox.currentSlide(i);
+                      }
+                    }
                   }
                 })
               )
@@ -935,6 +992,16 @@ const tpl = {
         ),
         rev_div,
         h('hr.mt-4'),
+        h('h4.mt-4.container-fluid', 'Reviews',
+          h('span.icon-eye.text-success.float-right.cp.sh-9', {
+            title: 'show reviews',
+            onclick: function(){
+              reviews_div.classList.toggle('hidden')
+            }
+          })
+        ),
+        reviews_div,
+        h('hr.mt-4'),
         h('h4.mt-4.container-fluid', 'Comments',
           h('span.icon-eye.text-success.float-right.cp.sh-9', {
             title: 'show comments',
@@ -946,9 +1013,6 @@ const tpl = {
         comments_div
       )
     )
-
-
-
 
     function scrap(x){
 
@@ -1008,11 +1072,10 @@ const tpl = {
         }
       )
     }
-    scrap(0);
 
 
     if(config.settings.subtitles){
-      if(!config.settings.subs_cache || subs_cache.value().indexOf(obj.id) === -1){
+      if(!config.settings.subs_cache || subs_cache.value().indexOf(obj.id) === -1 && ss.get('is_online')){
         utils.fetch_subs([config.sub_url, 'movie-imdb', obj.imdb_code].join('/'),
         function(err,res){
           if(err){return cl(err)}
@@ -1042,35 +1105,136 @@ const tpl = {
               fs.writeFileSync([base_dir, urls.subs, obj.id +'.json'].join('/'), JSON.stringify(arr))
               subs_cache.push(obj.id).write();
               cl('subs cached')
+            } else {
+              sub_div.append(h('p', 'No subs posted for this movie in '+ config.settings.subtitle_lang +' yet.'))
             }
             return rev_div.append(sub_div);
           } catch (err) {
             if(err){
-              rev_div.append(h('p','Subtitles not found for this movie'));
+              rev_div.append(h('p','No subs posted for this movie in '+ config.settings.subtitle_lang +' yet.'));
             }
           }
         })
-      } else {
-        let items = JSON.parse(fs.readFileSync([base_dir, urls.subs, obj.id +'.json'].join('/'), 'utf8'));
+      } else if(config.settings.subs_cache && subs_cache.value().indexOf(obj.id) !== -1){
+        let items = jp(fs.readFileSync([base_dir, urls.subs, obj.id +'.json'].join('/'), 'utf8'));
         for (let i = 0; i < items.length; i++) {
           sub_div.append(tpl.sub_item(items[i]));
         }
         cl('subs loaded from cache')
         rev_div.append(sub_div);
+      } else {
+        rev_div.append(h('p.text-warning','Subtitles unavailable offline'));
       }
     } else {
       rev_div.append(h('p','Subtitles disabled'));
     }
 
-    lightbox.init(lb_arr);
+
+    if(config.settings.reviews){
+      if(!config.settings.reviews_cache || reviews_cache.value().indexOf(obj.id) === -1 && ss.get('is_online')){
+        utils.getJSON([config.review_base, obj.imdb_code +'.json'].join('/'), function(err,res){
+          if(err || typeof res !== 'object'){
+            return cl('failed to fetch comments')
+          }
+
+          if(res.length > 0){
+            fs.writeFileSync([base_dir, urls.reviews, obj.id +'.json'].join('/'), js(res))
+            reviews_cache.push(obj.id).write();
+            cl('reviews cached')
+            for (let i = 0; i < res.length; i++) {
+              reviews_div.append(tpl.review_item(res[i]))
+            }
+          } else {
+            reviews_div.append(h('p', 'No reviews posted for this movie yet.'))
+          }
+
+        })
+      } else if(config.settings.reviews_cache && reviews_cache.value().indexOf(obj.id) !== -1) {
+        let items = jp(fs.readFileSync([base_dir, urls.reviews, obj.id +'.json'].join('/'), 'utf8'));
+        for (let i = 0; i < items.length; i++) {
+          reviews_div.append(tpl.review_item(items[i]));
+        }
+        cl('reviews loaded from cache')
+      } else {
+        reviews_div.append(h('p.text-warning','Uncached reviews unavalable offline'));
+      }
+    } else {
+      reviews_div.append(h('p','Reviews disabled'));
+    }
+
+    if(ss.get('is_online')){
+      scrap(0);
+      lightbox.init(lb_arr);
+    }
 
     return item;
   },
+  review_item: function(obj){
+
+    let rev_txt = h('p.mb-3');
+    rev_txt.innerHTML = obj.review;
+
+    return h('div.list-group-item',
+      h('div.row',
+        h('div.col-md-6',
+          h('h5.text-success', obj.title)
+        ),
+        h('div.col-md-6.text-right',
+          h('span.mr-2',
+            h('span.icon-star.mr-1.text-success.ch',{
+              title: 'Reviewers personal rating'
+            }),
+            function(){
+              if(obj.rating){
+                return obj.rating + '/10'
+              } else {
+                return 'N/A'
+              }
+            }
+          ),
+          h('span',
+            h('span.icon-heart.mr-1.text-success.ch',{
+              title: 'Review likes'
+            }),
+            function(){
+              if(obj.rank && obj.rank.length === 2){
+                return [obj.rank[0],obj.rank[1]].join('/')
+              } else {
+                return 'N/A'
+              }
+            }
+          )
+        )
+      ),
+      h('hr'),
+      rev_txt,
+      h('div.row',
+        h('div.col-md-6',
+          h('em.mt-1',
+            h('i.icon-user.mr-2.text-success.ch',{
+              title: 'user'
+            }),
+            obj.user || 'N/A'
+          )
+        ),
+        h('div.col-md-6.text-right',
+          h('em.mt-1',
+            h('i.icon-calendar.mr-2.text-success.ch',{
+              title: 'Review date'
+            }),
+            obj.date || 'N/A'
+          )
+        )
+      ),
+      h('hr'),
+      h('hr')
+    )
+  },
   cast_ico: function(obj){
-    let b_img = urls.bg_thumb,
+    let b_img = base_img_cache.bg_thumb,
     c_img;
-    if(!obj.url_small_image){
-      c_img = b_img
+    if(!obj.url_small_image || !ss.get('is_online')){
+      c_img = b_img;
     } else {
       c_img = [config.yts_url, urls.actors, obj.url_small_image].join('/')
     }
@@ -1109,11 +1273,18 @@ const tpl = {
     )
   },
   quick_item: function(obj){
-    let b_img = urls.bg_xs,
-    s_img = [obj.img, urls.cover_s].join('/');
+    let b_img = base_img_cache.bg_xs,
+    s_img;
+
+    if(ss.get('is_online')){
+      s_img = [config.yts_url, urls.img, [obj.img, urls.cover_s].join('/')].join('/')
+    } else {
+      s_img = b_img;
+    }
+
     return h('div.media.qs_item.cp',
       h('img.rounded.mr-2',{
-        src: [config.yts_url, urls.img, s_img].join('/'),
+        src: s_img,
         onerror: function(evt){
           evt.target.src = b_img;
         }
@@ -1169,8 +1340,10 @@ const tpl = {
     );
   },
   actor_cloud: function(){
-    let item = h('div.card-body.text-center'),
-    actors = _.shuffle(sp.cast).slice(0,20)
+    let sp = jp(fs.readFileSync(base_dir + urls.staff_popular_db, 'utf8')),
+    item = h('div.card-body.text-center'),
+    actors = _.shuffle(sp.cast).slice(0,20);
+    sp = null;
 
     for (let i = 1; i < actors.length; i++) {
       item.append(
@@ -1203,8 +1376,10 @@ const tpl = {
     );
   },
   director_cloud: function(){
-    let item = h('div.card-body.text-center'),
-    directors = _.shuffle(sp.directors).slice(0,20)
+    let sp = jp(fs.readFileSync(base_dir + urls.staff_popular_db, 'utf8')),
+    item = h('div.card-body.text-center'),
+    directors = _.shuffle(sp.directors).slice(0,20);
+    sp = null;
 
     for (let i = 1; i < directors.length; i++) {
       item.append(

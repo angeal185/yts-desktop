@@ -1,3 +1,7 @@
+const LS = localStorage,
+SS = sessionStorage,
+CS = function(){};
+
 const ls = {
   get: function(i){
     return jp(LS.getItem(i))
@@ -24,4 +28,18 @@ const ss = {
   }
 }
 
-module.exports = { ls, ss }
+CS.prototype = {
+  set: function(key, val){
+    this[key] = val;
+  },
+  get: function(key){
+    return this[key];
+  },
+  del: function(key){
+    delete this[key];
+  }
+};
+
+const cs = new CS();
+
+module.exports = { ls, ss, cs }

@@ -1,6 +1,4 @@
-
 const h = require('./h'),
-tpl = require('./tpl'),
 {ls,ss} = require('./storage');
 
 const pagination = {

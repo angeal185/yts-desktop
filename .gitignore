@@ -8,6 +8,8 @@ lerna-debug.log*
 
 build/tmp/**
 
+private
+
 src/app/db/search_db.json
 src/app/db/db_main.json
 src/app/db/staff_db.bak.json
@@ -18,6 +20,7 @@ src/app/db/yts_db.bak.json
 downloads/subs/*.zip
 downloads/torrent/*.torrent
 
+src/app/cache/reviews/*.json
 src/app/cache/subs/*.json
 src/app/cache/img/*.jpg
 src/app/cache/db/*.gz

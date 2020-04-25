@@ -1,12 +1,20 @@
-const { app, session, BrowserWindow, ipcMain } = require('electron'),
+const { app, session, BrowserWindow, ipcMain, Tray, nativeImage } = require('electron'),
 path = require('path'),
 url = require('url'),
-gz = require('./app/utils/gzip'),
 urls = require('./app/utils/urls'),
-config = require('./app/config');
+gz = require('./app/utils/gzip'),
+config = require('./app/config'),
+ico = require('./app/data/img').ico;
 
-config.main_cnf.icon = __dirname + config.settings.ico;
+config.main_cnf.icon = nativeImage.createFromBuffer(
+  Buffer.from(ico, 'base64')
+);
+
 config.main_cnf.webPreferences.preload = __dirname + "/app/main.js";
+
+
+//app.allowRendererProcessReuse = true;
+
 
 function init(){
 
@@ -18,11 +26,27 @@ function init(){
     pathname: path.join(__dirname, config.base_file)
   })
 
-  win.loadURL(dest, {
-    extraHeaders: 'Content-Type:text/html;charset=utf-8;'
-  });
+  win.loadURL(
+    url.format({
+      protocol: 'file',
+      slashes: true,
+      pathname: path.join(__dirname, config.base_file)
+    }),
+    {
+      extraHeaders: 'Content-Type:text/html;charset=utf-8;'
+    }
+  );
 
-  win.webContents.openDevTools();
+  if(config.proxy.enabled){
+    config.proxy.settings.proxyBypassRules = '"ipify.org", "imdb.com", "intensedebate.com",  "gravatar.com", "rawgit.org", "rottentomatoes.com"';
+    win.webContents.session.setProxy(config.proxy.settings)
+  }
+
+
+  if(config.settings.dev){
+
+    win.webContents.openDevTools();
+  }
 
   ipcMain.on('dl-img', function(event, arg) {
     win.webContents.session.downloadURL(arg)
@@ -37,70 +61,78 @@ function init(){
   win.webContents.session.on('will-download', function(event, item, webContents){
     let fname = item.getFilename(),
     ttl, db_gz;
-    cl(fname)
-    if(path.extname(fname) === '.torrent'){
-      item.setSavePath([config.settings.downloads, 'torrent', fname].join('/'))
-    } else if(path.extname(fname) === '.zip'){
-      item.setSavePath([config.settings.downloads, 'subs', fname].join('/'))
-    } else if(path.extname(fname) === '.jpg'){
-      ttl = item.getURL().split('/');
-      ttl = ttl.slice(0,-1).pop() + '.jpg';
-      item.setSavePath([__dirname, 'app/cache/img', ttl].join('/'))
-    } else if(path.extname(fname) === '.gz'){
-      db_gz = [__dirname, 'app/cache/db', fname].join('/');
-      item.setSavePath(db_gz)
-    }
+    console.log('dl...')
 
-    item.on('updated', function(event, state){
-      if (state === 'interrupted'){
-        console.log('Download is interrupted but can be resumed')
-      } else if (state === 'progressing'){
-        if (item.isPaused()) {
-          console.log('Download is paused')
-        } else {
-          console.log(`Received bytes: ${item.getReceivedBytes()}`)
-        }
-      }
-    })
+    if(path.extname(fname) !== '.json'){
 
-    item.once('done', function(event, state){
-
-      if(path.extname(fname) === '.jpg'){
-        win.webContents.send('dl-img', ttl.slice(0,-4))
+      if(path.extname(fname) === '.torrent'){
+        item.setSavePath([config.settings.downloads, 'torrent', fname].join('/'))
+      } else if(path.extname(fname) === '.zip'){
+        item.setSavePath([config.settings.downloads, 'subs', fname].join('/'))
+      } else if(path.extname(fname) === '.jpg'){
+        ttl = item.getURL().split('/');
+        ttl = ttl.slice(0,-1).pop() + '.jpg';
+        item.setSavePath([__dirname, 'app/cache/img', ttl].join('/'))
       } else if(path.extname(fname) === '.gz'){
-        fname = fname.slice(0,-3);
-        let obj = {
-          success: false,
-          type: 'danger',
-          file: fname.split('.')[0],
-          msg: 'db download corrupted'
-        }
-        gz.unzip(db_gz, [__dirname, 'app/db', fname].join('/'), function(err){
-          if(err){return win.webContents.send('update-db', obj)}
-          obj.success = true;
-          obj.type = 'success';
-          delete obj.msg;
-          win.webContents.send('update-db', obj);
-        })
+        db_gz = [__dirname, urls.dbcache, fname].join('/');
+        item.setSavePath(db_gz)
+      }
 
-      } else {
-        let obj = {
-          type: 'success',
-          msg: fname +' download complete'
-        };
-        if (state !== 'completed'){
-          obj.type = 'danger';
-          obj.msg = fname +' download failed';
+      item.on('updated', function(event, state){
+        if (state === 'interrupted'){
+          console.log('Download is interrupted but can be resumed')
+        } else if (state === 'progressing'){
+          if (item.isPaused()) {
+            console.log('Download is paused')
+          } else {
+            console.log(`Received bytes: ${item.getReceivedBytes()}`)
+          }
         }
-        win.webContents.send('dl-stat', obj)
+      })
+
+      item.once('done', function(event, state){
+
+        if(path.extname(fname) === '.jpg'){
+          win.webContents.send('dl-img', ttl.slice(0,-4))
+        } else if(path.extname(fname) === '.gz'){
+          fname = fname.slice(0,-3);
+          let obj = {
+            success: false,
+            type: 'danger',
+            file: fname.split('.')[0],
+            msg: 'db download corrupted'
+          }
+          gz.unzip(db_gz, [__dirname, 'app/db', fname].join('/'), function(err){
+            if(err){return win.webContents.send('update-db', obj)}
+            obj.success = true;
+            obj.type = 'success';
+            delete obj.msg;
+            win.webContents.send('update-db', obj);
+          })
+
+          } else {
+            let obj = {
+              type: 'success',
+              msg: fname +' download complete'
+            };
+            if (state !== 'completed'){
+              obj.type = 'danger';
+              obj.msg = fname +' download failed';
+            }
+            win.webContents.send('dl-stat', obj)
+          }
+
+        })
       }
 
     })
-  })
+
 
 }
 
-app.whenReady().then(init);
+app.whenReady(function(){
+
+}).then(init);
 
 app.on('window-all-closed', function(){
   if (process.platform !== 'darwin'){
@@ -115,7 +147,7 @@ app.on('activate', function(){
 })
 
 app.on('certificate-error', function(event, webContents, url, err, cert, cb) {
-  cl('hit')
+  console.log(url)
   event.preventDefault();
   cb(true);
 });

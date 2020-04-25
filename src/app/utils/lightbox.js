@@ -6,8 +6,8 @@ const lightbox = {
 
     let lb_content = document.getElementById('lb-main'),
     lb_row = h('div.row'),
-    b_img = './static/img/bg_xl.png',
-    b_img_2 = './static/img/bg_sm.png';
+    b_img = base_img_cache.bg_xl,
+    b_img_2 = base_img_cache.bg_sm;
 
     while (lb_content.firstChild) {
       lb_content.removeChild(lb_content.firstChild);
