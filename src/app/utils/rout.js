@@ -6,8 +6,25 @@ _ = require('lodash'),
 pagination = require('./pagination'),
 enc = require('./enc'),
 urls = require('./urls'),
+msgbox = require('./msgbox'),
 {ls,ss} = require('./storage'),
 Glide = require('./glide');
+
+/*
+
+let msg = {
+  "name": "test 2",
+  "topic": "test message 2",
+  "msg": "test msg 2 created"
+}
+
+
+msgbox.send(msg ,function(err){
+  if(err){return cl(err)}
+  cl('msg sent');
+})
+
+*/
 
 const rout = {
   home: function(dest){
@@ -98,114 +115,7 @@ const rout = {
   },
   contact: function(dest){
 
-    if(ls.get('id') && ls.get('id') !== '' && ss.get('is_online') === true){
-      let keypair = db.get('rsa_oaep').value(),
-      contact_base = h('div'),
-      plain_res = h('textarea.form-control.inp-dark.mb-2',{
-        placeholder: 'secure message',
-        readOnly: true,
-        rows: 5
-      }),
-      key_res = h('textarea.form-control.inp-dark.mb-2',{
-        placeholder: 'secure message',
-        readOnly: true,
-        rows: 5
-      }),
-      obj = {};
-
-      utils.fetch(config.contact.config, function(err,res){
-        if(err || !res.rsa_oaep || typeof res.rsa_oaep !== 'object'){
-          return cl('cannot fetch contact data')
-        }
-
-        let yts_public = res.rsa_oaep,
-        create_msg = h('div.row.hidden',
-          h('div.col-12',
-            h('h4', 'Create messege')
-          ),
-          h('div.col-md-6',
-            h('div.form-group',
-              h('input.form-control.inp-dark.mb-2',{
-                placeholder: 'name',
-                onkeyup: utils.debounce(function(evt) {
-                  obj.name = evt.target.value;
-                  enc.enc_contact(obj, plain_res, key_res, yts_public, keypair);
-                },2000)
-              }),
-              h('input.form-control.inp-dark.mb-2',{
-                placeholder: 'subject',
-                onkeyup: utils.debounce(function(evt) {
-                  obj.subject = evt.target.value;
-                  enc.enc_contact(obj, plain_res, key_res, yts_public, keypair);
-                },2000)
-              }),
-              h('input.form-control.inp-dark.mb-2',{
-                placeholder: 'email',
-                type: 'email',
-                onkeyup: utils.debounce(function(evt) {
-                  obj.email = evt.target.value;
-                  enc.enc_contact(obj, plain_res, key_res, yts_public, keypair);
-                },2000)
-              }),
-              h('textarea.form-control.inp-dark.mb-2',{
-                placeholder: 'plaintext message',
-                rows: 10,
-                onkeyup: utils.debounce(function(evt) {
-                  obj.msg = evt.target.value;
-                  enc.enc_contact(obj, plain_res, key_res, yts_public, keypair);
-                },2000)
-              })
-            )
-          ),
-          h('div.col-md-6',
-            h('div.form-group',
-              h('label', 'encrypted message'),
-              plain_res
-            ),
-            h('div.form-group',
-              h('label', 'reply key'),
-              key_res
-            )
-          )
-        ),
-        read_msg = h('div.row.hidden',
-          h('div.col-12',
-            h('h4', 'Read messege')
-          )
-        )
-
-        contact_base.append(
-          h('div.row',
-            h('div.col-6',
-              h('button.btn.btn-block.btn-outline-success.mb-2.sh-95', {
-                onclick: function(){
-                  read_msg.classList.add('hidden');
-                  create_msg.classList.remove('hidden');
-                }
-              },'Create message'),
-            ),
-            h('div.col-6',
-              h('button.btn.btn-block.btn-outline-success.mb-2.sh-95', {
-                onclick: function(){
-                  create_msg.classList.add('hidden');
-                  read_msg.classList.remove('hidden');
-                }
-              },'Read message'),
-            ),
-            h('div.col-12',
-              h('hr.w-100.mb-4')
-            )
-          ),
-          create_msg,
-          read_msg
-        )
-
-        dest.append(contact_base)
-
-      })
-    } else {
-      dest.append(h('p', 'offline while offline.'))
-    }
+    tpl.contact(dest)
 
 
   },
@@ -282,7 +192,7 @@ const rout = {
     }
 
     for (let i = 0; i < res[p_current - 1].length; i++) {
-      cl(res[p_current - 1][i])
+      cd(res[p_current - 1][i])
       pag_view_main.append(tpl.news_post(res[p_current - 1][i]),h('hr'))
     }
 
@@ -298,21 +208,35 @@ const rout = {
         for (let i = 0; i < max; i++) {
           item.append(pagination.pageItem(js(i + 1)))
         }
+        pag_div.append(
+          item,
+          h('div.pag-text.col-md-6.col-sm-12.text-right', 'viewing page ', pag_num, ' of '+ max),
+        )
       } else {
-        item = h('ul.pagination.col-md-6',
+        item = h('ul.pagination.col-md-6.col-sm-12.pl-3',
+          pagination.firstlink(),
           pagination.prevlink(),
           pagination.pag_back(p_current),
           pagination.pageItem(p_current + 1),
           pagination.pageItem(p_current + 2),
           pagination.pageItem(p_current + 3),
           pagination.pag_forw(max,p_current),
-          pagination.nextlink(max)
+          pagination.nextlink(max),
+          pagination.lastlink(max)
+        )
+
+        pag_div.append(
+          item,
+          h('div.col-md-6.col-sm-12.mb-2',
+            tpl.jump_to(max, pag_num, item)
+          ),
+          h('div.pag-text.col-md-6.col-sm-12', 'viewing page ', pag_num, ' of '+ max),
         )
       }
 
-      pag_div.append(
-        item,h('div.pag-text.col-md-6.text-right', 'viewing page ', pag_num, ' of '+ max)
-      )
+
+
+
 
       dest.append(
         search_res,
@@ -489,19 +413,25 @@ const rout = {
           item.append(pagination.pageItem(js(i + 1)))
         }
       } else {
-        item = h('ul.pagination.col-md-6',
+        item = h('ul.pagination.col-md-6.col-sm-12.pl-3',
+          pagination.firstlink(),
           pagination.prevlink(),
           pagination.pag_back(p_current),
           pagination.pageItem(p_current + 1),
           pagination.pageItem(p_current + 2),
           pagination.pageItem(p_current + 3),
           pagination.pag_forw(max,p_current),
-          pagination.nextlink(max)
+          pagination.nextlink(max),
+          pagination.lastlink(max)
         )
       }
 
       pag_div.append(
-        item,h('div.pag-text.col-md-6.text-right', 'viewing page ', pag_num, ' of '+ max)
+        item,
+        h('div.col-md-6.col-sm-12.mb-2',
+          tpl.jump_to(max, pag_num, item)
+        ),
+        h('div.pag-text.col-md-6.col-sm-12', 'viewing page ', pag_num, ' of '+ max),
       )
 
       dest.append(
@@ -714,7 +644,7 @@ const rout = {
         size: 8,
         onchange: function(evt){
           obj[key] = evt.target.value;
-          cl(obj)
+          cd(obj)
         }
       });
       for (let i = 0; i < config.search[key].length; i++) {

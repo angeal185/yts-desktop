@@ -53,11 +53,14 @@ db.defaults({
   subs_cache: [],
   likes: [],
   dislikes:[],
+  hits:[],
   reviews_cache: [],
-  rsa_oaep: {
-    public: null,
-    private: null
-  }
+  outbox: {},
+  inbox: {},
+  crypto: {},
+  ecdh_keychain: [],
+  ecdsa_keychain: [],
+  rsa_oaep_keychain: []
 }).write();
 
 yts_db.defaults({
@@ -79,9 +82,17 @@ global.scrap_cnt = 0;
 global.update_cnt = 0;
 
 //global vars
-global.cl = console.log;
-global.ce = console.error;
 
+console.dev = function(arg) {
+  if(config.settings.dev){
+    return cl(arg)
+  }
+};
+
+global.cl = console.log;
+global.cd = console.dev;
+global.ce = console.error;
+global.wc = window.crypto.subtle;
 global.base_img_cache = {};
 
 global.headers = {
@@ -103,4 +114,15 @@ global.headers = {
   }
 }
 
+
+const _ = require('lodash')
+
+db.set('test', []).write()
+
+
+
+
+cl(
+  db.get('test').value()
+)
 global.utils = require('./index');

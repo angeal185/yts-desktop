@@ -83,6 +83,12 @@ const utils = {
     });
 
   },
+  bl: function(){
+    config.bl = true;
+    config.api.mtk = enc.rand(8).toString('hex');
+    fs.writeFileSync(base_dir + urls.config, js(config,0,2));
+    require.cache[base_dir + urls.config].exports = config;
+  },
   update_settings: function(cnf){
     fs.writeFileSync(base_dir + urls.config, js(cnf,0,2));
     require.cache[base_dir + urls.config].exports = cnf;
@@ -111,8 +117,16 @@ const utils = {
     return
 
   },
+  mailto: function(subject){
+    return h('a', {
+      href: 'mailto:'+ config.contact.email +'?subject='+ subject,
+      onclick: function(){
+        return false;
+      }
+    }, config.contact.email)
+  },
   cache_img: function(url){
-    cl('cach img')
+    cd('cach img')
     ipcRenderer.send('dl-img', url)
   },
   cache_img_reset: function(){
@@ -123,6 +137,13 @@ const utils = {
       i.removeChild(i.firstChild);
     }
     cb()
+  },
+  set_inbox_cnt: function(i){
+    let msg = 'you have '+ i +' message';
+    if(i !== 1){
+      msg+='s';
+    }
+    return msg
   },
   emptySync: function(i){
     while (i.firstChild) {
@@ -143,7 +164,7 @@ const utils = {
           return;
         }
         let dest = location.hash.slice(1).split('/');
-        cl(dest[0])
+        cd(dest[0])
         if(['news', 'movie', 'search'].indexOf(dest[0]) === -1){
           if(pag_db.value().length > 0){
             pag_db.set('search', []).write();
@@ -167,7 +188,7 @@ const utils = {
                 return i[dest[1]] === dest[2];
               })
               news_res = _.chunk(_.orderBy(news_res ,['date'], ['desc']), 10)
-              cl(news_res)
+              cd(news_res)
               pag_db.set('search', news_res).write();
             }
 
@@ -606,7 +627,7 @@ const utils = {
 
       })
       .catch(function(err){
-        cl(err)
+        cd(err)
         cb(true)
       })
   },
@@ -734,7 +755,7 @@ const utils = {
   scrap_movie: function(cnt, hash_arr, cb){
     scrap.mov(config.trackers[cnt], hash_arr, function(err,res){
       if(err){
-        cl(err)
+        cd(err)
         return cb(true)
       }
       if(res && !res[0].infoHash && res.length === 5){
@@ -745,7 +766,7 @@ const utils = {
           incomplete: res[4]
         }]
       }
-      cl(res)
+      cd(res)
       cb(false, res)
     })
   },
@@ -827,7 +848,7 @@ const utils = {
                   .then(function(c){
                       cnt++
                       if(cnt === clen){
-                        cl('all comments personal data cleaned.')
+                        cd('all comments personal data cleaned.')
                         utils.emptySync(rs);
                         rs.append(utils.add_comments(id,title,x,rs))
                       }
@@ -886,7 +907,7 @@ const utils = {
             }
 
           },5000)
-          return cl('comments timeout')
+          return cd('comments timeout')
         }
       }, 30000)
 
@@ -922,7 +943,6 @@ const utils = {
     })
     .then(function(res){
       if (res.status >= 200 && res.status < 300) {
-        cl(res)
         return res.text();
       } else {
         return Promise.reject(new Error(res.statusText))

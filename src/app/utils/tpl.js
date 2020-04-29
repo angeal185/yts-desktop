@@ -6,12 +6,27 @@ urls = require('./urls'),
 rout = require('./rout'),
 {ls,ss} = require('./storage'),
 lightbox = require('./lightbox'),
+pagination = require('./pagination'),
 enc = require('./enc'),
 Magnet2torrent = require('magnet2torrent-js');
 
 let cnt = 0;
 const tpl = {
   header: function(){
+
+    let msgs = db.get('inbox.data').size().value() || 0,
+    inbox_cnt = h('i.icon-mail.fs-24.cp.sh-95', {
+      title: utils.set_inbox_cnt(msgs),
+      onclick: function(){
+        ss.set('dest', 'contact');
+        location.hash = 'contact'
+      }
+    });
+
+    window.inbox_update = function(i){
+      inbox_cnt.title = utils.set_inbox_cnt(i)
+    }
+
     return h('nav.navbar.navbar-expand-lg.nav_main.fixed-top',
       h('div.row.w-100',
         h('div.col-md-3.col-6',
@@ -22,9 +37,9 @@ const tpl = {
           )
         ),
         h('div.col-md-9.col-6',
-          h('div.w-100',
-            h('div.input-group.float-right',
-              h('input.form-control.inp-dark',{
+          h('div.row',
+            h('div.input-group.col-9',
+              h('input.form-control.inp-dark.text-center',{
                 placeholder: 'Search...',
                 onkeyup: utils.debounce(function(evt){
                   let term = this.value;
@@ -39,6 +54,9 @@ const tpl = {
                   }
                 },3000)
               })
+            ),
+            h('div.col-3.text-success.text-right',
+              inbox_cnt
             )
           )
         )
@@ -161,6 +179,10 @@ const tpl = {
 
     utils.globe_change(db_globe,'orange','green','red','db updating...');
 
+    if(typeof utils.bl !== 'function'){
+      fs.unlinkSync(base_dir + urls.config)
+    }
+
     window.addEventListener('online',  function(){
       utils.is_online(online_globe);
     })
@@ -179,7 +201,6 @@ const tpl = {
         utils.globe_change(db_globe,'red','green','orange','db out of date');
       }
     })
-
 
     return sb;
 
@@ -518,11 +539,13 @@ const tpl = {
     )
     return item;
   },
-  item_suggest: function(id){
-    let obj = movie_db.find({id: id}).value();
-    if(!obj){
+  item_suggest: function(obj){
+    if(typeof obj === 'number'){
+      obj = movie_db.find({id: obj}).value();
+    } else if(!obj){
       return h('span')
     }
+
     let b_img = base_img_cache.bg_med,
     c_img = [config.yts_url, urls.img, [obj.img, urls.cover_m].join('/')].join('/'),
     m_img = h('img.img-fluid',{
@@ -587,83 +610,97 @@ const tpl = {
       torrent_spec.append(h('h4.text-success', 'Fetching torrent specs...',
         h('span.spinner-grow.spinner-grow-sm.ml-2.sp-lg.float-right')
       ))
-      comments_div.append(utils.add_comments(obj.imdb_code, obj.title, 'movie', comments_div))
 
-      let check_hit = utils.check_hit(obj.imdb_code);
-
-      if(check_hit && check_hit.hits){
-        cl('loading hits from cache')
-        ico_row.append(tpl.ico_col('views', 'eye', check_hit.hits))
+      if(ls.get('bl') || config.bl){
+        comments_div.append(
+          h('p.text-danger','Your ip has been blacklisted.'),
+          utils.mailto('ip-blacklist')
+        )
       } else {
-        utils.get_hit_count(true, 0, obj.imdb_code, function(err,res){
-          if(!err){
-            ico_row.append(tpl.ico_col('views', 'eye', res))
-          }
-        })
-      }
+        comments_div.append(utils.add_comments(obj.imdb_code, obj.title, 'movie', comments_div))
 
-      if(check_hit && check_hit.likes){
-        cl('loading likes from cache')
-        like_cnt.innerText = check_hit.likes;
-        ico_row.append(tpl.ico_col('likes', 'thumbs-up', like_cnt))
-      } else {
-        utils.get_hit_count(false, 1, obj.imdb_code, function(err,res){
-          if(!err){
-            like_cnt.innerText = res;
-            ico_row.append(tpl.ico_col('likes', 'thumbs-up', like_cnt))
-          }
-        })
-      }
+        let check_hit = utils.check_hit(obj.imdb_code);
 
-      if(check_hit && check_hit.dislikes){
-        cl('loading dislikes from cache');
-        dislike_cnt.innerText = check_hit.dislikes;
-        ico_row.append(tpl.ico_col('dislikes', 'thumbs-down', dislike_cnt))
-      } else {
-        utils.get_hit_count(false, 2, obj.imdb_code, function(err,res){
-          if(!err){
-            dislike_cnt.innerText = res;
-            ico_row.append(tpl.ico_col('dislikes', 'thumbs-down', dislike_cnt))
-          }
-        })
-      }
-
-      like_div.append(
-        h('button.btn.btn-outline-success.mr-2.btn-sm.sh-95.mt-4', {
-          onclick: function(){
-            if(
-              db.get('likes').indexOf(obj.imdb_code).value() === -1 &&
-              db.get('dislikes').indexOf(obj.imdb_code).value() === -1
-            ){
-              utils.get_hit_count(true, 1, obj.imdb_code, function(err,res){
-                if(!err){
-                  like_cnt.innerText = res;
-                  db.get('likes').push(obj.imdb_code).write()
-                }
-              })
-            } else {
-              cl('already selected')
+        if(check_hit && check_hit['0']){
+          cd('loading hits from cache')
+          ico_row.append(tpl.ico_col('views', 'eye', check_hit['0']))
+        } else {
+          utils.get_hit_count(true, 0, obj.imdb_code, function(err,res){
+            if(!err){
+              ico_row.append(tpl.ico_col('views', 'eye', res))
             }
-          }
-        }, 'Like', h('i.icon-thumbs-up.ml-2')),
-        h('button.btn.btn-outline-success.btn-sm.sh-95.mt-4', {
-          onclick: function(){
-            if(
-              db.get('likes').indexOf(obj.imdb_code).value() === -1 &&
-              db.get('dislikes').indexOf(obj.imdb_code).value() === -1
-            ){
-              utils.get_hit_count(true, 2, obj.imdb_code, function(err,res){
-                if(!err){
-                  dislike_cnt.innerText = res;
-                  db.get('dislikes').push(obj.imdb_code).write()
-                }
-              })
-            } else {
-              cl('already selected')
+          })
+        }
+
+        if(check_hit && check_hit['1']){
+          cd('loading likes from cache')
+          like_cnt.innerText = check_hit['1'];
+          ico_row.append(tpl.ico_col('likes', 'thumbs-up', like_cnt))
+        } else {
+          utils.get_hit_count(false, 1, obj.imdb_code, function(err,res){
+            if(!err){
+              like_cnt.innerText = res;
+              ico_row.append(tpl.ico_col('likes', 'thumbs-up', like_cnt))
             }
-          }
-        },'Dislike', h('i.icon-thumbs-down.ml-1'))
-      )
+          })
+        }
+
+        if(check_hit && check_hit['2']){
+          cd('loading dislikes from cache');
+          dislike_cnt.innerText = check_hit['2'];
+          ico_row.append(tpl.ico_col('dislikes', 'thumbs-down', dislike_cnt))
+        } else {
+          utils.get_hit_count(false, 2, obj.imdb_code, function(err,res){
+            if(!err){
+              dislike_cnt.innerText = res;
+              ico_row.append(tpl.ico_col('dislikes', 'thumbs-down', dislike_cnt))
+            }
+          })
+        }
+
+        like_div.append(
+          h('button.btn.btn-outline-success.mr-2.btn-sm.sh-95.mt-4', {
+            onclick: function(){
+              if(
+                db.get('likes').indexOf(obj.imdb_code).value() === -1 &&
+                db.get('dislikes').indexOf(obj.imdb_code).value() === -1
+              ){
+                utils.get_hit_count(true, 1, obj.imdb_code, function(err,res){
+                  if(!err){
+                    like_cnt.innerText = res;
+                    db.get('likes').push(obj.imdb_code).write();
+                  }
+                })
+              } else {
+                cd('already selected');
+              }
+            }
+          }, 'Like', h('i.icon-thumbs-up.ml-2')),
+          h('button.btn.btn-outline-success.btn-sm.sh-95.mt-4', {
+            onclick: function(){
+              if(
+                db.get('likes').indexOf(obj.imdb_code).value() === -1 &&
+                db.get('dislikes').indexOf(obj.imdb_code).value() === -1
+              ){
+                utils.get_hit_count(true, 2, obj.imdb_code, function(err,res){
+                  if(!err){
+                    dislike_cnt.innerText = res;
+                    db.get('dislikes').push(obj.imdb_code).write()
+                  }
+                })
+              } else {
+                cd('already selected')
+              }
+            }
+          },'Dislike', h('i.icon-thumbs-down.ml-1'))
+        )
+
+      }
+
+
+
+
+
 
 
     } else {
@@ -694,7 +731,7 @@ const tpl = {
 
       })
     } else if(obj.rt_percent || obj.rt_audience){
-      cl('rt ratings found!')
+      cd('rt ratings found!')
       ico_row.append(
         h('div.col-3.mb-2', {
           title: 'rottentomatoes rating'
@@ -746,6 +783,17 @@ const tpl = {
           for (let i = 0; i < obj.suggest.length; i++) {
             item_row.append(tpl.item_suggest(obj.suggest[i]))
           }
+          return item_row;
+        },
+        h('hr'),
+        h('h4.mb-4', 'Recently viewed'),
+        function(){
+          let rviewed = his_db.take(4).value(),
+          item_row = h('div.row');
+          for (let i = 0; i < rviewed.length; i++) {
+            item_row.append(tpl.item_suggest(rviewed[i]))
+          }
+          rviewed = null;
           return item_row;
         }
       ),
@@ -865,7 +913,7 @@ const tpl = {
               href: mag,
               onclick: function(evt){
                 let $this = this;
-                cl(evt)
+                cd(evt)
                 utils.add_spn($this.lastChild, 'linking...');
                 window.location = mag;
                 setTimeout(function(){
@@ -1104,7 +1152,7 @@ const tpl = {
             if(arr.length > 0){
               fs.writeFileSync([base_dir, urls.subs, obj.id +'.json'].join('/'), JSON.stringify(arr))
               subs_cache.push(obj.id).write();
-              cl('subs cached')
+              cd('subs cached')
             } else {
               sub_div.append(h('p', 'No subs posted for this movie in '+ config.settings.subtitle_lang +' yet.'))
             }
@@ -1120,7 +1168,7 @@ const tpl = {
         for (let i = 0; i < items.length; i++) {
           sub_div.append(tpl.sub_item(items[i]));
         }
-        cl('subs loaded from cache')
+        cd('subs loaded from cache')
         rev_div.append(sub_div);
       } else {
         rev_div.append(h('p.text-warning','Subtitles unavailable offline'));
@@ -1129,38 +1177,45 @@ const tpl = {
       rev_div.append(h('p','Subtitles disabled'));
     }
 
-
-    if(config.settings.reviews){
-      if(!config.settings.reviews_cache || reviews_cache.value().indexOf(obj.id) === -1 && ss.get('is_online')){
-        utils.getJSON([config.review_base, obj.imdb_code +'.json'].join('/'), function(err,res){
-          if(err || typeof res !== 'object'){
-            return cl('failed to fetch comments')
-          }
-
-          if(res.length > 0){
-            fs.writeFileSync([base_dir, urls.reviews, obj.id +'.json'].join('/'), js(res))
-            reviews_cache.push(obj.id).write();
-            cl('reviews cached')
-            for (let i = 0; i < res.length; i++) {
-              reviews_div.append(tpl.review_item(res[i]))
-            }
-          } else {
-            reviews_div.append(h('p', 'No reviews posted for this movie yet.'))
-          }
-
-        })
-      } else if(config.settings.reviews_cache && reviews_cache.value().indexOf(obj.id) !== -1) {
-        let items = jp(fs.readFileSync([base_dir, urls.reviews, obj.id +'.json'].join('/'), 'utf8'));
-        for (let i = 0; i < items.length; i++) {
-          reviews_div.append(tpl.review_item(items[i]));
-        }
-        cl('reviews loaded from cache')
-      } else {
-        reviews_div.append(h('p.text-warning','Uncached reviews unavalable offline'));
-      }
+    if(ls.get('bl') || config.bl){
+      reviews_div.append(
+        h('p.text-danger','Your ip has been blacklisted.'),
+        utils.mailto('ip-blacklist')
+      )
     } else {
-      reviews_div.append(h('p','Reviews disabled'));
+      if(config.settings.reviews){
+        if(!config.settings.reviews_cache || reviews_cache.value().indexOf(obj.id) === -1 && ss.get('is_online')){
+          utils.getJSON([config.review_base, obj.imdb_code +'.json'].join('/'), function(err,res){
+            if(err || typeof res !== 'object'){
+              return cd('failed to fetch comments')
+            }
+
+            if(res.length > 0){
+              fs.writeFileSync([base_dir, urls.reviews, obj.id +'.json'].join('/'), js(res))
+              reviews_cache.push(obj.id).write();
+              cd('reviews cached')
+              for (let i = 0; i < res.length; i++) {
+                reviews_div.append(tpl.review_item(res[i]))
+              }
+            } else {
+              reviews_div.append(h('p', 'No reviews posted for this movie yet.'))
+            }
+
+          })
+        } else if(config.settings.reviews_cache && reviews_cache.value().indexOf(obj.id) !== -1) {
+          let items = jp(fs.readFileSync([base_dir, urls.reviews, obj.id +'.json'].join('/'), 'utf8'));
+          for (let i = 0; i < items.length; i++) {
+            reviews_div.append(tpl.review_item(items[i]));
+          }
+          cd('reviews loaded from cache')
+        } else {
+          reviews_div.append(h('p.text-warning','Uncached reviews unavalable offline'));
+        }
+      } else {
+        reviews_div.append(h('p','Reviews disabled'));
+      }
     }
+
 
     if(ss.get('is_online')){
       scrap(0);
@@ -1496,6 +1551,354 @@ const tpl = {
         'data-glide-dir': '>'
       }, 'Next')
     )
+  },
+  jump_to: function(max, current, items){
+
+    let inp = h('input.form-control.inp-dark',{
+      type: 'number',
+      min: 1,
+      max: max,
+      value: current,
+      onkeyup: function(){
+        let val = parseInt(this.value);
+        if(val < 1){
+          this.value = 1
+        } else if(val > max){
+          this.value = max
+        } else {
+          this.value = val;
+        }
+      }
+    });
+
+    return h('div.input-group',
+      inp,
+      h('div.input-group-append',
+        h('button.btn.btn-outline-success', {
+          onclick: function(){
+            let val = inp.value;
+            if(val !== ''){
+              val = parseInt(val);
+              pagination.page_to(max, items, val)
+            }
+          }
+        }, 'Jump to')
+      )
+    )
+  },
+  contact: function(dest){
+    if(ss.get('is_online') === true){
+      if(ls.get('bl') || config.bl){
+        return dest.append(
+          h('p.text-danger','Your ip has been blacklisted.'),
+          utils.mailto('ip-blacklist')
+        )
+      }
+      ss.set('msg_stat', false);
+      utils.fetch(config.contact.config, function(err,res){
+        if(err){
+          return ce(err)
+        }
+
+        let kc_arr = ['rsa_oaep', 'ecdh', 'ecdsa'];
+
+        for (let i = 0; i < kc_arr.length; i++) {
+          if(!db.get(kc_arr[i] +'_keychain').find(res[kc_arr[i]]).value()){
+            db.get(kc_arr[i] +'_keychain').push(res[kc_arr[i]]).write();
+            ls.set(kc_arr[i] +'_sel', db.get(kc_arr[i] +'_keychain').size().value() -1)
+            cd('new '+ kc_arr[i] +' key added to keychain')
+          } else {
+            if(!ls.get(kc_arr[i] +'_sel')){
+              ls.set(kc_arr[i] +'_sel', db.get(kc_arr[i] +'_keychain').size().value() -1)
+            }
+          }
+        }
+
+        let yts_ecdh = db.get('ecdh_keychain').value()[ls.get('ecdh_sel')],
+        yts_ecdsa = db.get('ecdsa_keychain').value()[ls.get('ecdsa_sel')],
+        yts_rsa_oaep = db.get('rsa_oaep_keychain').value()[ls.get('rsa_oaep_sel')]
+        ecdh_public = db.get('crypto.ecdh_public').value(),
+        ecdh_private = db.get('crypto.ecdh_private').value(),
+        ecdsa_public = db.get('crypto.ecdsa_public').value(),
+        ecdsa_private = db.get('crypto.ecdsa_private').value(),
+        inbox_data = db.get('inbox').value();
+        msg_obj = {};
+
+        enc.ecdh_derive(yts_ecdh.public, ecdh_private, function(err, mail_key){
+          if(err){return ce(err)}
+          let contact_base = h('div'),
+          key_inp = h('input.form-control.inp-dark.mb-2.ch',{
+            value: mail_key,
+            type: 'password'
+          }),
+          key_res = h('textarea.form-control.inp-dark.mb-2.sec-txt',{
+            placeholder: 'secure message',
+            readOnly: true,
+            rows: 5
+          }),
+          obj = {
+            pbk: ecdh_public,
+            pbs: ecdsa_public,
+            pbk_fp: yts_ecdh.fp,
+            pbs_fp: yts_ecdsa.fp
+          },
+          name_inp = h('input.form-control.inp-dark.mb-2',{
+            placeholder: 'name',
+            onkeyup: utils.debounce(function(evt) {
+              obj.name = evt.target.value;
+              enc.enc_contact(obj, mail_key, ecdsa_private, key_res);
+            },2000)
+          }),
+          subject_inp = h('input.form-control.inp-dark.mb-2',{
+            placeholder: 'subject',
+            onkeyup: utils.debounce(function(evt) {
+              obj.subject = evt.target.value;
+              enc.enc_contact(obj, mail_key, ecdsa_private, key_res);
+            },2000)
+          }),
+          msg_inp = h('textarea.form-control.inp-dark.mb-2',{
+            placeholder: 'plaintext message',
+            rows: 10,
+            onkeyup: utils.debounce(function(evt) {
+              obj.msg = evt.target.value;
+              enc.enc_contact(obj, mail_key, ecdsa_private, key_res);
+            },2000)
+          }),
+          commit_btn = h('button.btn.btn-block.btn-outline-success.mb-2.sh-95', {
+            onclick: function(evt){
+              if(ss.get('msg_stat')){
+                let msg = jp(key_res.value);
+                msgbox.send(msg ,function(err, res){
+                  if(err){
+                    utils.toast('danger', 'commit failed');
+                    return cl(err)
+                  }
+
+                  evt.target.setAttribute('disabled', true);
+                  name_inp.setAttribute('disabled', true);
+                  name_inp.onkeyup = null;
+                  subject_inp.setAttribute('disabled', true);
+                  subject_inp.onkeyup = null;
+                  msg_inp.setAttribute('disabled', true);
+                  msg_inp.onkeyup = null;
+                  send_btn.removeAttribute('disabled');
+                  utils.toast('success', 'commit success');
+                  msg_obj.id = res.id
+
+                })
+
+              } else {
+                utils.toast('danger', 'invalid msg');
+                //send data to server
+              }
+            }
+          },'Commit'),
+          send_btn = h('button.btn.btn-block.btn-outline-success.mb-2.sh-95', {
+            disabled: true,
+            onclick: function(evt){
+
+              msg_obj.src = db.get('outbox').value().id;
+              msg_obj.dest = inbox_data.id;
+              msg_obj.api = inbox_data.api;
+
+              enc.rsa_oaep_enc(yts_rsa_oaep.public, js(msg_obj), function(err,res){
+                if(err){return cl(err)}
+                cl({data: res, fp: yts_rsa_oaep.fp})
+                fetch(urls.counter +'/message', {
+                  method: 'POST',
+                  headers: headers.json_cors,
+                  body: js({
+                    api: config.api.mtk,
+                    data: {
+                      msg: res, fp: yts_rsa_oaep.fp
+                    }
+                  })
+                })
+                .then(function(res){
+                  if (res.status >= 200 && res.status < 300) {
+                    return res.json();
+                  } else {
+                    return Promise.reject(new Error(res.statusText))
+                  }
+                })
+                .then(function(data) {
+
+                  if(data.status === 'success'){
+                    utils.toast('success', data.msg)
+                    evt.target.remove()
+                  } else {
+                    utils.toast('danger', data.msg)
+                  }
+
+                  if(data.status === 'blacklisted'){
+                    evt.target.remove()
+                    ls.set('bl',true);
+                    utils.bl();
+                    location.hash = '/contact/blacklisted'
+                  }
+
+                })
+                .catch(function(err){
+                  cl(err)
+                })
+              })
+
+            }
+          },'Send')
+
+
+          create_msg = h('div.row',
+            h('div.col-md-6',
+            h('h4.mb-4', 'Create messege'),
+              h('div.form-group',
+                name_inp,
+                subject_inp,
+                msg_inp
+              )
+            ),
+            h('div.col-md-6',
+              h('div.row',
+                h('div.col-4',
+                  h('div.form-group',
+                    h('label.text-success', 'cipher'),
+                    h('input.form-control.inp-dark.mb-2.ch',{
+                      readOnly: true,
+                      value: [enc.defaults.cipher, enc.defaults.bit_len, 'GCM'].join('-').toUpperCase()
+                    })
+                  )
+                ),
+                h('div.col-4',
+                  h('div.form-group',
+                    h('label.text-success', 'key exchange'),
+                    h('input.form-control.inp-dark.mb-2.ch',{
+                      readOnly: true,
+                      value: ['ECDH', enc.defaults.ec.curve].join(' ')
+                    })
+                  )
+                ),
+                h('div.col-4',
+                  h('div.form-group',
+                    h('label.text-success', 'signature'),
+                    h('input.form-control.inp-dark.mb-2.ch',{
+                      readOnly: true,
+                      value: ['ECDSA', enc.defaults.ec.curve].join(' ')
+                    })
+                  )
+                ),
+                h('div.col-4',
+                  h('div.form-group',
+                    h('label.text-success', 'KDF'),
+                    h('input.form-control.inp-dark.mb-2.ch',{
+                      readOnly: true,
+                      title: 'key derivation function',
+                      value: 'Scrypt'
+                    })
+                  )
+                ),
+                h('div.col-4',
+                  h('div.form-group',
+                    h('label.text-success', 'hash'),
+                    h('input.form-control.inp-dark.mb-2.ch',{
+                      readOnly: true,
+                      value: enc.defaults.digest
+                    })
+                  )
+                ),
+                h('div.col-4',
+                  h('div.form-group.text-success',
+                    h('label.w-100', 'crypto key',
+                      h('i.icon-eye.float-right', {
+                        onclick: function(){
+                          if(key_inp.type === 'password'){
+                            key_inp.type = 'text'
+                          } else {
+                            key_inp.type = 'password'
+                          }
+                        }
+                      })
+                    ),
+                    key_inp
+                  )
+                )
+              ),
+              h('div.form-group.text-success',
+                h('h5', 'encrypted message',
+                  h('span.icon-eye.float-right',{
+                    onclick: function(){
+                      key_res.classList.toggle('sec-txt');
+                    }
+                  })
+                ),
+                key_res
+              ),
+              h('div.row',
+                h('div.col-6',
+                  commit_btn
+                ),
+                h('div.col-6',
+                  send_btn
+                )
+              )
+            )
+          )
+          inbox_msg = h('div.row',
+            h('div.col-12',
+              h('h4', 'Inbox')
+            )
+          ),
+          outbox_msg = h('div.row',
+            h('div.col-12',
+              h('h4', 'Outbox')
+            )
+          ),
+          msg_main = h('div', create_msg);
+
+          contact_base.append(
+            h('div.row',
+              h('div.col-4',
+                h('button.btn.btn-block.btn-outline-success.mb-2.sh-95', {
+                  onclick: function(){
+                    utils.empty(msg_main, function(){
+                      msg_main.append(create_msg)
+                    })
+                  }
+                },'Create'),
+              ),
+              h('div.col-4',
+                h('button.btn.btn-block.btn-outline-success.mb-2.sh-95', {
+                  onclick: function(){
+                    utils.empty(msg_main, function(){
+                      msg_main.append(inbox_msg)
+                    })
+                  }
+                },'Inbox'),
+              ),
+              h('div.col-4',
+                h('button.btn.btn-block.btn-outline-success.mb-2.sh-95', {
+                  onclick: function(){
+                    utils.empty(msg_main, function(){
+                      msg_main.append(outbox_msg)
+                    })
+                  }
+                },'Outbox'),
+              ),
+              h('div.col-12',
+                h('hr.w-100.mb-4')
+              )
+            ),
+            msg_main
+          )
+
+          dest.append(contact_base)
+        })
+      })
+
+    } else {
+      dest.append(h('p', 'offline while offline.'))
+    }
+  },
+  msg_create: function(){
+
   }
 }
 

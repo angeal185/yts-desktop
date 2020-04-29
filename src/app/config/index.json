@@ -2,7 +2,7 @@
   "base_file": "/app/index.html",
   "contact": {
     "email": "yts-desktop@protonmail.ch",
-    "config": "https://ghcdn.rawgit.org/angeal185/yts-contact/master/config.json"
+    "config": "https://angeal185.github.io/yts-contact/config.json"
   },
   "base_url": "https://yts.mx/api/v2/",
   "yts_url": "https://yts.mx",
@@ -17,7 +17,8 @@
     }
   },
   "api": {
-    "ptk": "32af5373615e8323"
+    "ptk": "32af5373615e8323",
+    "mtk": "69609d6c599ed381"
   },
   "settings": {
     "dev": true,
@@ -297,7 +298,15 @@
       "weight": 700
     }
   ],
-  "base_img_cache": ["logo","bg_xs","bg_sm","bg_med","bg_lg","bg_xl","bg_thumb"],
+  "base_img_cache": [
+    "logo",
+    "bg_xs",
+    "bg_sm",
+    "bg_med",
+    "bg_lg",
+    "bg_xl",
+    "bg_thumb"
+  ],
   "gzip": {
     "level": 9,
     "memLevel": 9,
@@ -314,14 +323,14 @@
     "animationTimingFunc": "cubic-bezier(0,1.36,1,-0.5)",
     "throttle": 50,
     "breakpoints": {
-      "800": {
-        "perView": 3
+      "400": {
+        "perView": 1
       },
       "600": {
         "perView": 2
       },
-      "400": {
-        "perView": 1
+      "780": {
+        "perView": 3
       }
     }
   },
@@ -330,5 +339,19 @@
     "cid": "42474d54bf68346d25c9c1822dfcf691",
     "post_url": "https://angeal185.github.io/yts-comments",
     "api": "/js/genericCommentWrapperV2.js"
+  },
+  "msgbox": {
+    "inbox_check": 21600000,
+    "outbox_check": 86400000,
+    "inbox_msg": {
+      "name": "welcome-bot",
+      "topic": "welcome message",
+      "msg": "Your personal inbox has been successfully created"
+    },
+    "outbox_msg": {
+      "name": "welcome-bot",
+      "topic": "welcome message",
+      "msg": "Your personal outbox has been successfully created"
+    }
   }
 }

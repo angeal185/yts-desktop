@@ -6,6 +6,7 @@ fs = require('fs'),
 { ls,ss } = require('./utils/storage'),
 enc = require('./utils/enc'),
 urls = require('./utils/urls'),
+msgbox = require('./utils/msgbox'),
 gz = require('./utils/gzip');
 
 if(config.settings.dev){
@@ -13,6 +14,8 @@ if(config.settings.dev){
 }
 
 utils.init_hit();
+
+//enc.ecdh_g
 
 window.onload = function(evt){
   let doc = evt.target;
@@ -59,27 +62,9 @@ window.onload = function(evt){
             return ce(err);
           }
 
-          let keypair = db.get('rsa_oaep').value(),
-          arr = [],
+          let arr = [],
           str;
 
-          if(
-            !keypair.public ||
-            keypair.public === null ||
-            !keypair.private ||
-            keypair.private === null
-          ){
-            cl('oaep keypair not found, generating...')
-            enc.rsa_oaep_keygen(function(err, keydata){
-              if(err){return cl(err)}
-              db.set('rsa_oaep', keydata).write();
-              cl('oaep keypair created')
-            })
-          } else {
-            cl('oaep keypair found')
-          }
-
-          keypair = null;
 
           if(stat.url !== res.url){
             status_db.assign({url: res.url}).write();
@@ -125,6 +110,43 @@ window.onload = function(evt){
           }
 
         })
+
+
+        if(!db.get('crypto.ecdh_private').value() || !db.get('crypto.ecdh_public').value()){
+          enc.ecdh_gen(function(err,res){
+            if(err){return ce(err)}
+            cl(res)
+          })
+        }
+
+        if(!db.get('crypto.ecdsa_private').value() || !db.get('crypto.ecdsa_public').value()){
+          enc.ecdsa_gen(function(err,res){
+            if(err){return ce(err)}
+            cl(res)
+          })
+        }
+
+        if(!db.get('crypto.mail').value()){
+          db.set('crypto.mail', enc.keygen(32)).write();
+          cd('mail crypto key created');
+        }
+
+        if(!db.get('inbox.id').value() || !db.get('outbox.id').value()){
+          msgbox.init();
+        } else {
+          msgbox.fetch_out(function(err){
+            if(err){return cl(err)}
+            msgbox.fetch(function(err, res, current){
+              if(err){return cl(err)}
+              inbox_update(res);
+              cd('inbox update success')
+              if(current){
+                utils.toast('info', 'inbox update success');
+              }
+            })
+          })
+        }
+
 
         window.onload = null;
 

@@ -151,6 +151,81 @@ const pagination = {
     );
 
     return item;
+  },
+  firstlink: function(){
+    let item = h('li.page-item',
+      h('a.page-link', {
+        onclick: function(evt){
+
+          let dest = evt.target.parentNode.parentNode,
+          items = dest.getElementsByClassName('pag-num');
+
+          if(ss.get('pag-current') === 1){
+            return;
+          }
+
+          for (let i = 0; i < items.length; i++) {
+            items[i].innerText = i + 1;
+          }
+
+          pagination.set_active(items[0], items)
+          ss.set('pag-current', 1);
+          window.page_change();
+
+        }
+      },'First')
+    )
+
+    return item;
+  },
+  lastlink: function(max){
+    let item = h('li.page-item',
+      h('a.page-link', {
+        onclick: function(evt){
+
+          let dest = evt.target.parentNode.parentNode,
+          items = dest.getElementsByClassName('pag-num');
+
+          if(ss.get('pag-current') === max){
+            return;
+          }
+
+          for (let i = 0; i < items.length; i++) {
+            items[i].innerText = (max -4) + i;
+          }
+          pagination.set_active(items[4], items)
+
+          ss.set('pag-current', max);
+          window.page_change();
+
+        }
+      },'Last')
+    )
+
+    return item;
+  },
+  page_to: function(max, items, sel){
+
+    items = items.getElementsByClassName('pag-num');
+
+    if(ss.get('pag-current') === max){
+      return;
+    }
+
+    if((sel + 4) > max){
+      for (let i = 0; i < items.length; i++) {
+        items[i].innerText = (sel -4) + i;
+      }
+      pagination.set_active(items[4], items)
+    } else {
+      for (let i = 0; i < items.length; i++) {
+        items[i].innerText = sel + i;
+      }
+      pagination.set_active(items[0], items)
+    }
+
+    ss.set('pag-current', sel)
+    window.page_change();
   }
 }
 

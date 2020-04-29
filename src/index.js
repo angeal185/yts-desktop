@@ -37,14 +37,13 @@ function init(){
     }
   );
 
-  if(config.proxy.enabled){
+  if(config.proxy.enabled && !config.bl){
     config.proxy.settings.proxyBypassRules = '"ipify.org", "imdb.com", "intensedebate.com",  "gravatar.com", "rawgit.org", "rottentomatoes.com"';
     win.webContents.session.setProxy(config.proxy.settings)
   }
 
 
   if(config.settings.dev){
-
     win.webContents.openDevTools();
   }
 

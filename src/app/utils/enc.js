@@ -1,19 +1,43 @@
-const crypto = require('crypto');
+const crypto = require('crypto'),
+{ ls,ss } = require('./storage');
 
 const enc = {
-  rand: function(i){
+  defaults: {
+    cipher: 'aes',
+    bit_len: '256',
+    iv_len: 32,
+    tag_len: 16,
+    encode: 'hex',
+    digest: 'SHA-512',
+    scrypt: {
+      N: 16384,
+      r: 8,
+      p:1
+    },
+    ec: {
+      curve: 'P-521'
+    }
+  },
+  rand: function(i) {
     return crypto.randomBytes(i);
   },
-  hex_dec: function(i){
+  keygen: function(len) {
+    return enc.rand(len).toString(enc.defaults.encode)
+  },
+  hex_dec: function(i) {
     return Buffer.from(i, 'hex').toString('binary');
   },
-  hex_enc: function(i){
+  hex_enc: function(i) {
     return Buffer.from(i, 'binary').toString('hex');
   },
-  hash512: function(data){
+  hash512: function(data) {
     return crypto.createHash('sha512').update(data).digest('hex')
   },
-  hmac: function(secret, data){
+  gen_fp: function(data){
+    let hash = crypto.createHash('sha1').update(data).digest('hex');
+    return hash.split(/(?=(?:..)*$)/).join(':').toUpperCase();
+  },
+  hmac: function(secret, data) {
     try {
       const sig = crypto.createHmac('sha512', secret);
       sig.update(data);
@@ -22,207 +46,195 @@ const enc = {
       throw new ERROR('hmac tamper');
     }
   },
-  rand_u8: function(len){
+  rand_u8: function(len) {
     return window.crypto.getRandomValues(new Uint8Array(len));
   },
   hex2u8: function(hex) {
-      return new Uint8Array(Buffer.from(hex, 'hex'))
+    return new Uint8Array(Buffer.from(hex, 'hex'))
   },
-  u82hex: function(arr){
+  u82hex: function(arr) {
     return Buffer.from(arr).toString('hex');
   },
-  rsa_oaep_keygen: function(cb){
-    window.crypto.subtle.generateKey(
-        {
-            name: "RSA-OAEP",
-            modulusLength: 4096,
-            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-            hash: {name: "SHA-512"},
-        },
-        true,
-        ["encrypt", "decrypt"]
-    )
+  ecdh_g: function(){
+    wc.generateKey({name: "ECDH", namedCurve: enc.defaults.ec.curve},true,["deriveBits"])
     .then(function(key){
-      let obj = {};
-      window.crypto.subtle.exportKey("jwk", key.publicKey)
-      .then(function(publicData){
-        obj.public = publicData
-        window.crypto.subtle.exportKey("jwk", key.privateKey)
-        .then(function(privateData){
-          obj.private = privateData;
-          cb(false, obj);
+
+      wc.exportKey("jwk",key.publicKey)
+      .then(function(key_public){
+        let obj = {
+          public: Buffer.from(js(key_public), 'binary').toString('hex')
+        }
+          cl()
+          wc.exportKey("jwk",key.privateKey)
+          .then(function(key_private){
+            obj.private = Buffer.from(js(key_private), 'binary').toString('hex')
+            cl(js(obj))
+          })
+          .catch(function(err){
+             cl(err);
+          });
+      })
+      .catch(function(err){
+         cl(err);
+      });
+    })
+    .catch(function(err){
+       cl(err);
+    });
+  },
+  ecdh_gen: function(cb){
+    wc.generateKey({name: "ECDH", namedCurve: enc.defaults.ec.curve},true,["deriveBits"])
+    .then(function(key){
+
+      wc.exportKey("jwk",key.publicKey)
+      .then(function(key_public){
+          db.set('crypto.ecdh_public',
+            Buffer.from(js(key_public), 'binary').toString('hex')
+          ).write();
+          wc.exportKey("jwk",key.privateKey)
+          .then(function(key_private){
+            db.set('crypto.ecdh_private',
+              Buffer.from(js(key_private), 'binary').toString('hex')
+            ).write();
+            cb(false, 'ecdh keygen complete')
+          })
+          .catch(function(err){
+             cl(err);
+          });
+      })
+      .catch(function(err){
+         cl(err);
+      });
+    })
+    .catch(function(err){
+       cl(err);
+    });
+  },
+  ecdsa_gen: function(cb){
+    wc.generateKey({name: "ECDSA", namedCurve: enc.defaults.ec.curve},true,["sign", "verify"])
+    .then(function(key){
+      wc.exportKey("jwk",key.publicKey)
+      .then(function(key_public){
+          db.set('crypto.ecdsa_public',
+            Buffer.from(js(key_public), 'binary').toString('hex')
+          ).write();
+          wc.exportKey("jwk",key.privateKey)
+          .then(function(key_private){
+            db.set('crypto.ecdsa_private',
+              Buffer.from(js(key_private), 'binary').toString('hex')
+            ).write();
+            cb(false, 'ecdh keygen complete')
+          })
+          .catch(function(err){
+             cl(err);
+          });
+      })
+      .catch(function(err){
+         cl(err);
+      });
+    })
+    .catch(function(err){
+       cl(err);
+    });
+  },
+  ecdsa_sign: function(private, data, cb){
+
+    private = jp(Buffer.from(private, 'hex').toString('binary'));
+    data = new Uint8Array(Buffer.from(data, 'hex'));
+    wc.importKey("jwk",private,{name: "ECDSA",namedCurve: enc.defaults.ec.curve}, true,["sign"])
+    .then(function(privateKey){
+      wc.sign({name: "ECDSA",hash: {name: enc.defaults.digest}},privateKey,data)
+      .then(function(sig){
+          cb(false, Buffer.from(sig).toString('hex'));
+      })
+      .catch(function(err){
+          cb(err);
+      });
+    })
+    .catch(function(err){
+      cb(err);
+    });
+
+  },
+  ecdsa_verify: function(){
+    public = jp(Buffer.from(public, 'hex').toString('binary'));
+    wc.importKey("jwk",private,{name: "ECDSA",namedCurve: enc.defaults.ec.curve}, true,["deriveBits"])
+    .then(function(privateKey){
+
+    })
+    .catch(function(err){
+      cb(err);
+    });
+  },
+  ecdh_derive: function(public, private, cb){
+
+    public = jp(Buffer.from(public, 'hex').toString('binary'));
+    private = jp(Buffer.from(private, 'hex').toString('binary'));
+    wc.importKey("jwk",private,{name: "ECDH",namedCurve: enc.defaults.ec.curve}, true,["deriveBits"])
+    .then(function(privateKey){
+        wc.importKey("jwk",public,{name: "ECDH",namedCurve: enc.defaults.ec.curve}, true,[])
+        .then(function(publicKey){
+            wc.deriveBits({name: "ECDH",namedCurve: enc.defaults.ec.curve,public: publicKey},privateKey,513)
+            .then(function(bits){
+              let secret = Buffer.from(bits, 1, 32),
+              salt = Buffer.from(bits, 33, 32);
+              crypto.scrypt(secret, salt, 32, enc.defaults.scrypt, function(err, derivedKey){
+                if(err){return cb(err)};
+                cb(false, derivedKey.toString('hex'));
+              });
+            })
+            .catch(function(err){
+                cb(err);
+            });
         })
         .catch(function(err){
           cb(err);
         });
-      })
-      .catch(function(err){
-        cb(err);
-      });
     })
     .catch(function(err){
       cb(err);
     });
   },
-  aes_gcm_keygen: function(cb){
-    window.crypto.subtle.generateKey(
-        {
-          name: "AES-GCM",
-          length: 256,
-        },
-        true,
-        ["encrypt", "decrypt"]
-    )
-    .then(function(key){
-      window.crypto.subtle.exportKey("raw", key)
-      .then(function(keydata){
-        keydata = new Uint8Array(keydata);
-        cb(false, keydata)
-      })
-      .catch(function(err){
-        cb(err);
-      });
-    })
-    .catch(function(err){
-      cb(err);
-    });
-  },
-  aes_gcm_dec: function(obj, data, cb){
-
-    window.crypto.subtle.importKey(
-        "raw",
-        enc.hex2u8(obj.key),
-        {name: "AES-GCM"},
-        false,
-        ["encrypt", "decrypt"]
-    )
-    .then(function(key){
-
-      window.crypto.subtle.decrypt(
-          {
-            name: "AES-GCM",
-            iv: enc.hex2u8(obj.iv),
-            tagLength: 128,
-          },
-          key,
-          enc.hex2u8(data)
-      )
-      .then(function(decrypted){
-        let ptext = new TextDecoder().decode(new Uint8Array(decrypted));
-        cb(false, ptext);
-      })
-      .catch(function(err){
-        cb(err);
-      });
-    })
-    .catch(function(err){
-      cb(err);
-    });
-
-  },
-  aes_gcm_enc: function(key, data, cb){
-
-    window.crypto.subtle.importKey(
-        "raw",
-        key,
-        {name: "AES-GCM"},
-        false,
-        ["encrypt", "decrypt"]
-    )
-    .then(function(key){
-
-      let obj = {
-        iv: window.crypto.getRandomValues(new Uint8Array(12))
+  encrypt: function(text, key) {
+    try {
+      const iv = crypto.randomBytes(enc.defaults.iv_len),
+        cipher = crypto.createCipheriv(
+          [enc.defaults.cipher, enc.defaults.bit_len, 'gcm'].join('-'),
+          Buffer.from(key, enc.defaults.encode),
+          iv
+        ),
+        encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
+      return Buffer.concat([iv, cipher.getAuthTag(), encrypted]).toString(enc.defaults.encode);
+    } catch (err) {
+      if (err) {
+        return console.error(err)
       }
-      window.crypto.subtle.encrypt(
-        {
-            name: "AES-GCM",
-            iv: obj.iv,
-            tagLength: 128
-          },
-        key,
-        new TextEncoder().encode(data)
-      )
-      .then(function(encrypted){
-        obj.data = enc.u82hex(new Uint8Array(encrypted));
-        cb(false, obj);
-      })
-      .catch(function(err){
-        cb(err);
-      });
-    })
-    .catch(function(err){
-      cb(err);
-    });
-
+    }
   },
-  rsa_oaep_dec: function(prvKey, obj, cb){
-    window.crypto.subtle.importKey(
-      "jwk",
-      prvKey,
-      {
-        name: "RSA-OAEP",
-        hash: {
-          name: "SHA-512"
-        }
-      },
-      false,
-      ["decrypt"]
-    )
-    .then(function(key){
-      window.crypto.subtle.decrypt({name: "RSA-OAEP"},key, obj.data)
-      .then(function(decrypted){
-        decrypted = new Uint8Array(decrypted);
-        if(!obj.u8){
-          decrypted = new TextDecoder().decode(decrypted);
-        }
-        cb(false, decrypted);
-      })
-      .catch(function(err){
-        cb(err);
-      });
-
-    })
-    .catch(function(err){
-      cb(err);
-    });
-  },
-  rsa_aes_dec: function(obj, privateKey, cb){
-    enc.rsa_oaep_dec(privateKey, {data: enc.hex2u8(obj.ctext), u8: false}, function(err, res){
-      if(err){
-        return cb(err)
+  decrypt: function(encdata, key) {
+    try {
+      let tag_slice = enc.defaults.iv_len + enc.defaults.tag_len;
+      encdata = Buffer.from(encdata, enc.defaults.encode);
+      const decipher = crypto.createDecipheriv(
+        [enc.defaults.cipher, enc.defaults.bit_len, 'gcm'].join('-'),
+        Buffer.from(key, enc.defaults.encode),
+        encdata.slice(0, enc.defaults.iv_len)
+      );
+      decipher.setAuthTag(encdata.slice(enc.defaults.iv_len, tag_slice));
+      return decipher.update(encdata.slice(tag_slice), 'binary', 'utf8') + decipher.final('utf8');
+    } catch (err) {
+      if (err) {
+        return console.error(err)
       }
-      res = JSON.parse(res);
-      enc.aes_gcm_dec(res, obj.data, function(err, ptext){
-        if(err){return cb(err)}
-        cb(false, ptext);
-      })
-
-    })
-  },
-  rsa_oaep_enc: function(pubKey, obj, cb){
-
-    if(!obj.u8 || obj.u8 === false){
-      obj.data = new TextEncoder().encode(obj.data);
     }
-
-    window.crypto.subtle.importKey(
-      "jwk",
-      pubKey,
-      {
-        name: "RSA-OAEP",
-        hash: {
-          name: "SHA-512"
-        }
-      },
-      true,
-      ["encrypt"]
-    )
-    .then(function(key){
-
-      window.crypto.subtle.encrypt({name: "RSA-OAEP"}, key, obj.data)
-      .then(function(encrypted){
-         cb(false, new Uint8Array(encrypted));
+  },
+  rsa_oaep_enc: function(key, ptext, cb){
+    key = jp(Buffer.from(key, 'hex').toString())
+    wc.importKey("jwk",key,{name: "RSA-OAEP",hash:{name: "SHA-512"}},true,["encrypt"])
+    .then(function(publicKey){
+      wc.encrypt({name: "RSA-OAEP"},publicKey, Buffer.from(ptext))
+      .then(function(ctext){
+        cb(false, Buffer.from(ctext).toString('hex'))
       })
       .catch(function(err){
         cb(err);
@@ -231,105 +243,85 @@ const enc = {
     .catch(function(err){
       cb(err);
     });
+
   },
-  rsa_aes_enc: function(ptext, publicKey, cb){
-    enc.aes_gcm_keygen(function(err, key){
-      if(err){return ce(err)}
-       let obj = {
-         key: enc.u82hex(key)
-       }
+  enc_contact: function(obj, key, sig, out) {
 
-       enc.aes_gcm_enc(key, ptext, function(err, res){
-         if(err){return ce(err)}
-         let final = {
-           data: res.data
-         }
-         obj.iv = enc.u82hex(res.iv);
-         enc.rsa_oaep_enc(publicKey, {data: js(obj), u8: false}, function(err, ctext){
-          if(err){return ce(err)}
-
-           final.ctext = enc.u82hex(ctext);
-           cb(false, final)
-         })
-
-       })
-
-    })
-  },
-  enc_contact: function(obj, out, key, pk, keypair){
-
-    if(!ls.get('id') || ls.get('id') === ''){
-      utils.toast('danger','id has been tampered with. sending such a message would result in you being blacklisted.');
-      setTimeout(function(){
-        location.reload()
-      },3000)
-      return;
-    }
-
-    if(typeof obj === 'object'){
+    if (typeof obj === 'object') {
       let ptext = js(obj);
-      let test_arr = ['name','subject','email','msg'],
-      key_arr = Object.keys(obj);
+      let test_arr = ['name', 'subject', 'msg'],
+      key_arr = Object.keys(obj),
+      ctext;
 
       for (let i = 0; i < test_arr.length; i++) {
-        if(!obj[test_arr[i]] || obj[test_arr[i]] === ''){
+        if (!obj[test_arr[i]] || obj[test_arr[i]] === '') {
+          ss.set('msg_stat', false);
           return out.value = 'all fields must be filled out'
         }
 
-        if(test_arr[i] !== 'msg'){
-          if(obj[test_arr[i]].length < 2 || obj[test_arr[i]].length > 32){
-            return out.value = test_arr[i] +' must be between 2 - 32 characters in length';
+        if (test_arr[i] !== 'msg') {
+          if (obj[test_arr[i]].length < 2 || obj[test_arr[i]].length > 32) {
+            ss.set('msg_stat', false);
+            return out.value = test_arr[i] + ' must be between 2 - 32 characters in length';
           }
         }
 
       }
 
-      if(!enc.is_letters(obj.name)){
+      if (!enc.is_letters(obj.name)) {
+        ss.set('msg_stat', false);
         return out.value = 'name can only contain letters'
       }
 
-      if(!enc.is_alphanumeric(obj.subject)){
+      if (!enc.is_alphanumeric(obj.subject)) {
+        ss.set('msg_stat', false);
         return out.value = 'subject can only contain letters and numbers'
       }
 
-      if(!enc.is_email(obj.email)){
-        return out.value = 'invalid email address'
+      for (let i = 0; i < test_arr.length; i++) {
+        ctext = enc.encrypt(obj[test_arr[i]], key);
+        if(obj[test_arr[i]] === enc.decrypt(ctext, key)){
+          obj[test_arr[i]] = ctext;
+        } else {
+          ss.set('msg_stat', false);
+          return out.value = 'Fatal crypto key error. you must reset your key'
+        }
       }
 
-      enc.rsa_aes_enc(ptext, pk.public, function(err,res){
-        if(err){return cl(err)}
-        let date = Date.now();
-        res.hash = pk.hash;
-        res.public = js(keypair.public),
-        res.date = date;
-        out.value = Buffer.from(js(res)).toString('base64');
-        key.value = Buffer.from(
-          js({
-            private: keypair.private,
-            date: date,
-            hash: enc.hash512(js(keypair.private))
-          })
-        ).toString('base64');
+      ctext = null;
+
+      obj.id = Date.now();
+
+      enc.ecdsa_sign(sig, obj.msg, function(err,res){
+        if(err){
+          ss.set('msg_stat', false);
+          return cl(err)
+        }
+        obj.sig = res;
+        out.value = js(obj);
+        ss.set('msg_stat', true);
       })
+
     } else {
       out.value = 'invalid data'
+      ss.set('msg_stat', false);
     }
 
   },
-  is_email: function(email){
-   if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)){
-     return true;
-    }
-    return false;
-  },
-  is_letters: function(txt){
-    if(txt.match(/^[A-Za-z]+$/)){
+  is_email: function(email) {
+    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
       return true;
     }
     return false;
   },
-  is_alphanumeric: function(txt){
-    if(txt.match(/^[0-9a-zA-Z]+$/)) {
+  is_letters: function(txt) {
+    if (txt.match(/^[A-Za-z]+$/)) {
+      return true;
+    }
+    return false;
+  },
+  is_alphanumeric: function(txt) {
+    if (txt.match(/^[0-9a-zA-Z]+$/)) {
       return true;
     }
     return false;
