@@ -445,7 +445,7 @@ const utils = {
       let items = ls.get('hit_items');
       for (let i = 0; i < items.length; i++) {
         if(items[i].id === id){
-          return items[i];
+          return items[i].val;
         }
       }
       return false
@@ -453,24 +453,23 @@ const utils = {
       if(err){return false}
     }
   },
-  store_hit: function(id, sel, val){
+  store_hit: function(id, val){
     try {
       let items = ls.get('hit_items') || [],
       exists = false;
 
       for (let i = 0; i < items.length; i++) {
         if(items[i].id === id){
-          items[i][sel] = val;
+          items[i].val = val;
           exists = true;
         }
       }
 
       if(exists === false){
-        let obj = {
-          id: id
-        }
-        obj[sel] = val
-        items.push(obj)
+        items.push({
+          id: id,
+          val: val
+        })
       }
 
       ls.set('hit_items', items);
@@ -493,16 +492,25 @@ const utils = {
     ls.set('hit_items_date', Date.now() + 3600000);
 
   },
-  get_hit_count: function(is_count, cnt_type,  id, cb){
+  add_hit_count: function(id, sel, cb){
     let dest;
 
-    if(is_count === false){
-      is_count = 'count';
-    } else {
-      is_count = 'add';
+    let hc = db.get('hits').value(),
+    arr = null;
+    if(hc[id] && hc[id][sel] !== 0){
+      return cb(true)
     }
 
-    dest = [urls.counter, is_count].join('/');
+    if(!hc[id]){
+      arr = [0,0,0];
+    } else if(hc[id] && typeof hc[id] === 'object'){
+      arr = hc[id]
+    } else {
+      ce('error in hits db')
+      return cb(true)
+    }
+
+    dest = [urls.dev_counter, 'add'].join('/');
 
     fetch(dest, {
       method: 'POST',
@@ -514,25 +522,76 @@ const utils = {
       },
       body: js({
         id: id,
-        sel: cnt_type,
+        sel: sel,
         api: config.api.ptk
       })
     })
     .then(function(res){
       if (res.status >= 200 && res.status < 300) {
-        return res.text();
+        return res.json();
       } else {
         return Promise.reject(new Error(res.statusText))
       }
     })
     .then(function(res) {
 
-      if(typeof parseInt(res) === 'number'){
-        utils.store_hit(id, cnt_type, res)
-        cb(false, res)
+      if(res.status === 'ok'){
+        cl(res)
+        arr[sel] = 1;
+        db.set('hits.'+ id, arr).write();
+        return cb(false, res.msg)
+      } else if(res.status === 'blacklisted'){
+        ls.set('bl',true);
+        utils.bl();
+        utils.toast('danger', res.msg);
+      }
+      cb(true)
+    })
+    .catch(function(err){
+      cb(true)
+    })
+  },
+  get_hit_count: function(id, cb){
+    let dest;
+
+
+    dest = [urls.dev_counter, 'count'].join('/');
+
+    fetch(dest, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Sec-Fetch-Dest': 'object',
+        'Sec-Fetch-mode': 'cors',
+        'Sec-Fetch-Site': 'cross-site'
+      },
+      body: js({
+        id: id,
+        api: config.api.ptk
+      })
+    })
+    .then(function(res){
+      if (res.status >= 200 && res.status < 300) {
+        return res.json();
+      } else {
+        return Promise.reject(new Error(res.statusText))
+      }
+    })
+    .then(function(res) {
+
+      if(res.status === 'ok'){
+        cl(res)
+        if(typeof res.msg === 'object'){
+
+          utils.store_hit(id, res.msg)
+          cb(false, res.msg)
+        } else {
+          cb(true)
+        }
       } else {
         cb(true)
       }
+
     })
     .catch(function(err){
       cb(true)

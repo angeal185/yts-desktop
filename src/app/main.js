@@ -15,7 +15,7 @@ if(config.settings.dev){
 
 utils.init_hit();
 
-//enc.ecdh_g
+cl(enc.rand(16).toString('hex'))
 
 window.onload = function(evt){
   let doc = evt.target;

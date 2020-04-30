@@ -673,41 +673,19 @@ const rout = {
   },
   history: function(main, cb){
 
-    let base_res = h('div.row',
-      h('div.col-12.text-center',
-        h('h2', 'History'),
-        h('hr.w-100')
-      )
-    ),
-    items = his_db.value();
-
-    for (let i = 0; i < items.length; i++) {
-      base_res.append(tpl.item_sel(items[i], 'history'))
-    }
-
-    main.append(
-      base_res,
-      tpl.cat_cloud()
-    )
+    ss.set('dest', 'search');
+    pag_db.set('search', his_db.chunk(20).value()).write();
+    ss.set('pag-current', 1)
+    location.hash = 'search/history';
 
   },
   saved: function(main, cb){
-    let base_res = h('div.row',
-      h('div.col-12.text-center',
-        h('h2', 'Saved items'),
-        h('hr.w-100')
-      )
-    ),
-    items = save_db.value();
 
-    for (let i = 0; i < items.length; i++) {
-      base_res.append(tpl.item_sel(items[i], 'saved'))
-    }
+    ss.set('dest', 'search');
+    pag_db.set('search', save_db.chunk(20).value()).write();
+    ss.set('pag-current', 1)
+    location.hash = 'search/saved';
 
-    main.append(
-      base_res,
-      tpl.cat_cloud()
-    )
   },
   movie: function(dest){
     let id = parseInt(ss.get('mov_id'));

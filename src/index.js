@@ -33,6 +33,7 @@ function init(){
       pathname: path.join(__dirname, config.base_file)
     }),
     {
+      userAgent: 'yts-desktop',
       extraHeaders: 'Content-Type:text/html;charset=utf-8;'
     }
   );

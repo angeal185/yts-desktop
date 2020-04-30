@@ -562,7 +562,7 @@ const tpl = {
     m_img = tpl.img_cache_check(obj, m_img, b_img, c_img);
 
     return h('div.col-6.text-center',
-      h('div.browse-movie-link.bc-hov.mb-4.cp',
+      h('div.browse-movie-link.bc-hov.mb-4.cp.sh-95',
         m_img
       )
     );
@@ -621,86 +621,82 @@ const tpl = {
 
         let check_hit = utils.check_hit(obj.imdb_code);
 
-        if(check_hit && check_hit['0']){
-          cd('loading hits from cache')
-          ico_row.append(tpl.ico_col('views', 'eye', check_hit['0']))
-        } else {
-          utils.get_hit_count(true, 0, obj.imdb_code, function(err,res){
-            if(!err){
-              ico_row.append(tpl.ico_col('views', 'eye', res))
-            }
-          })
-        }
-
-        if(check_hit && check_hit['1']){
+        if(check_hit){
+          cl(check_hit)
           cd('loading likes from cache')
-          like_cnt.innerText = check_hit['1'];
-          ico_row.append(tpl.ico_col('likes', 'thumbs-up', like_cnt))
+          ico_row.append(tpl.ico_col('views', 'eye', js(check_hit[0])));
+          like_cnt.innerText = js(check_hit[1]);
+          ico_row.append(tpl.ico_col('likes', 'thumbs-up', like_cnt));
+          dislike_cnt.innerText = js(check_hit[2]);
+          ico_row.append(tpl.ico_col('dislikes', 'thumbs-down', dislike_cnt));
         } else {
-          utils.get_hit_count(false, 1, obj.imdb_code, function(err,res){
+          utils.add_hit_count(obj.imdb_code, 0, function(err,res){
             if(!err){
-              like_cnt.innerText = res;
-              ico_row.append(tpl.ico_col('likes', 'thumbs-up', like_cnt))
+              cl('hitcount updated')
+            }
+            if(!ls.get('bl') && !config.bl){
+              utils.get_hit_count(obj.imdb_code, function(err,res){
+                if(!err){
+                  ico_row.append(tpl.ico_col('views', 'eye', js(res[0])))
+                  like_cnt.innerText = js(res[1]);
+                  ico_row.append(tpl.ico_col('likes', 'thumbs-up', like_cnt))
+                  dislike_cnt.innerText = js(res[2]);
+                  ico_row.append(tpl.ico_col('dislikes', 'thumbs-down', dislike_cnt))
+                }
+              })
             }
           })
         }
 
-        if(check_hit && check_hit['2']){
-          cd('loading dislikes from cache');
-          dislike_cnt.innerText = check_hit['2'];
-          ico_row.append(tpl.ico_col('dislikes', 'thumbs-down', dislike_cnt))
-        } else {
-          utils.get_hit_count(false, 2, obj.imdb_code, function(err,res){
-            if(!err){
-              dislike_cnt.innerText = res;
-              ico_row.append(tpl.ico_col('dislikes', 'thumbs-down', dislike_cnt))
-            }
-          })
-        }
 
         like_div.append(
           h('button.btn.btn-outline-success.mr-2.btn-sm.sh-95.mt-4', {
             onclick: function(){
-              if(
-                db.get('likes').indexOf(obj.imdb_code).value() === -1 &&
-                db.get('dislikes').indexOf(obj.imdb_code).value() === -1
-              ){
-                utils.get_hit_count(true, 1, obj.imdb_code, function(err,res){
+              if(!ls.get('bl') && !config.bl){
+                utils.add_hit_count(obj.imdb_code, 1, function(err,res){
                   if(!err){
-                    like_cnt.innerText = res;
-                    db.get('likes').push(obj.imdb_code).write();
+                    let items = ls.get('hit_items'),
+                    nc = parseInt(like_cnt.innerText)+ 1;
+                    if(typeof items === 'object'){
+                      for (let i = 0; i < items.length; i++) {
+                        if(items[i].id === obj.imdb_code){
+                          items[i].val[1] = nc;
+                          break;
+                        }
+                      }
+                      ls.set('hit_items', items);
+                    }
+                    like_cnt.innerText = nc;
                   }
                 })
-              } else {
-                cd('already selected');
               }
             }
           }, 'Like', h('i.icon-thumbs-up.ml-2')),
           h('button.btn.btn-outline-success.btn-sm.sh-95.mt-4', {
             onclick: function(){
-              if(
-                db.get('likes').indexOf(obj.imdb_code).value() === -1 &&
-                db.get('dislikes').indexOf(obj.imdb_code).value() === -1
-              ){
-                utils.get_hit_count(true, 2, obj.imdb_code, function(err,res){
+              if(!ls.get('bl') && !config.bl){
+                utils.add_hit_count(obj.imdb_code, 2, function(err,res){
                   if(!err){
-                    dislike_cnt.innerText = res;
-                    db.get('dislikes').push(obj.imdb_code).write()
+                    let items = ls.get('hit_items'),
+                    nc = parseInt(dislike_cnt.innerText)+ 1;
+                    if(typeof items === 'object'){
+                      for (let i = 0; i < items.length; i++) {
+                        if(items[i].id === obj.imdb_code){
+                          items[i].val[2] = nc;
+                          break;
+                        }
+                      }
+                      ls.set('hit_items', items)
+                    }
+                    dislike_cnt.innerText = nc;
                   }
                 })
-              } else {
-                cd('already selected')
               }
             }
           },'Dislike', h('i.icon-thumbs-down.ml-1'))
         )
 
       }
-
-
-
-
-
 
 
     } else {
@@ -745,7 +741,7 @@ const tpl = {
 
     let item = h('div.row',
       h('div.col-sm-12.col-md-4.text-center',
-        h('img.img-fluid.lg-img.cz', {
+        h('img.img-fluid.lg-img.cz.sh-95', {
           src: m_img || b_img,
           alt: obj.title,
           onerror: function(evt){
@@ -942,7 +938,7 @@ const tpl = {
             lb_arr.push([config.yts_url, urls.img, l_img].join('/'));
             img_row.append(
               h('div.col',
-                h('img.img-fluid.cz',{
+                h('img.img-fluid.cz.sh-95',{
                   src: [config.yts_url, urls.img, d_img].join('/'),
                   onerror: function(evt){
                     evt.target.src = b_img;
@@ -1295,7 +1291,7 @@ const tpl = {
     }
     return h('div.col-md-3.col-sm-6',
       h('div.media',
-        h('img.rounded.mr-2.mb-2.img-thumbnail.border-success',{
+        h('img.rounded.mr-2.mb-2.img-thumbnail.border-success.sh-95',{
           src: c_img,
           onerror: function(evt){
             evt.target.src = b_img;
@@ -1704,7 +1700,7 @@ const tpl = {
               enc.rsa_oaep_enc(yts_rsa_oaep.public, js(msg_obj), function(err,res){
                 if(err){return cl(err)}
                 cl({data: res, fp: yts_rsa_oaep.fp})
-                fetch(urls.counter +'/message', {
+                fetch(urls.dev_counter +'/message', {
                   method: 'POST',
                   headers: headers.json_cors,
                   body: js({

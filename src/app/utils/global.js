@@ -51,9 +51,7 @@ db.defaults({
   saved: [],
   img_cache: [],
   subs_cache: [],
-  likes: [],
-  dislikes:[],
-  hits:[],
+  hits:{},
   reviews_cache: [],
   outbox: {},
   inbox: {},
@@ -115,14 +113,9 @@ global.headers = {
 }
 
 
-const _ = require('lodash')
 
-db.set('test', []).write()
-
-
-
-
+//db.set('hits', {}).write()
 cl(
-  db.get('test').value()
+//  db.get('hits').value()
 )
 global.utils = require('./index');
