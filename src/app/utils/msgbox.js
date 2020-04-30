@@ -55,6 +55,137 @@ const msgbox = {
     })
 
   },
+  create_store: function(cb){
+    db.set('store', {}).write();
+
+    let obj = {
+      api: uuidv4(),
+      id: 'yts_'+ enc.rand(24).toString('hex')
+    }
+
+    fetch([urls.msgbox, obj.id].join('/'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept-Encoding': 'gzip',
+        'Sec-Fetch-Dest': 'object',
+        'Sec-Fetch-mode': 'cors',
+        'Sec-Fetch-Site': 'cross-site',
+        'x-api-key': obj.api
+      },
+      body: js(save_db.value())
+    })
+    .then(function(res){
+      if (res.status >= 200 && res.status < 300) {
+        return res.json();
+      } else {
+        return Promise.reject(new Error(res.statusText))
+      }
+    })
+    .then(function(data) {
+      cl(data)
+      db.get(dest).assign({
+        api: obj.api,
+        id: obj.id
+      }).write();
+
+      cb(false);
+    })
+    .catch(function(err){
+      cb(err)
+    })
+
+  },
+  update_store: function(cb){
+
+    let obj = db.get('store').value();
+
+    fetch([urls.msgbox, obj.id].join('/') + '?q=id:>0', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept-Encoding': 'gzip',
+        'Sec-Fetch-Dest': 'object',
+        'Sec-Fetch-mode': 'cors',
+        'Sec-Fetch-Site': 'cross-site',
+        'x-api-key': obj.api
+      }
+    })
+    .then(function(res){
+      if (res.status >= 200 && res.status < 300) {
+
+        fetch([urls.msgbox, obj.id].join('/'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept-Encoding': 'gzip',
+            'Sec-Fetch-Dest': 'object',
+            'Sec-Fetch-mode': 'cors',
+            'Sec-Fetch-Site': 'cross-site',
+            'x-api-key': obj.api
+          },
+          body: js(save_db.value())
+        })
+        .then(function(res){
+          if (res.status >= 200 && res.status < 300) {
+            return res.json();
+          } else {
+            return Promise.reject(new Error(res.statusText))
+          }
+        })
+        .then(function(data) {
+
+          cb(false, data)
+        })
+        .catch(function(err){
+          cb(err)
+        })
+
+      } else {
+        return Promise.reject(new Error(res.statusText))
+      }
+    })
+    .catch(function(err){
+      cb(err)
+    })
+
+  },
+  fetch_store: function(cb){
+
+    let obj = db.get('store').value();
+
+    fetch([urls.msgbox, obj.id].join('/'), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept-Encoding': 'gzip',
+        'Sec-Fetch-Dest': 'object',
+        'Sec-Fetch-mode': 'cors',
+        'Sec-Fetch-Site': 'cross-site'
+      }
+    })
+    .then(function(res){
+      if (res.status >= 200 && res.status < 300) {
+        return res.json();
+      } else {
+        return Promise.reject(new Error(res.statusText))
+      }
+    })
+    .then(function(data) {
+      cl(data)
+      for (let i = 0; i < data.length; i++) {
+        delete data[i]._id;
+        delete data[i]._createdOn;
+      }
+      db.set('saved', data).write()
+
+      cb(false, data);
+    })
+    .catch(function(err){
+      cb(err)
+    })
+
+  },
   send: function(body, cb){
     let obj = db.get('outbox').value();
 

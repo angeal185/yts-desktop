@@ -131,6 +131,9 @@ window.onload = function(evt){
           cd('mail crypto key created');
         }
 
+        
+
+
         if(!db.get('inbox.id').value() || !db.get('outbox.id').value()){
           msgbox.init();
         } else {

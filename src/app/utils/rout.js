@@ -370,7 +370,65 @@ const rout = {
     let title = location.hash.split('/').pop(),
     search_res = h('div.row',
       h('div.col-12.text-center',
-        h('h2', utils.capitalize(decodeURIComponent(title)) + ' Search Results'),
+        function(){
+          if(title === 'saved'){
+
+              return h('div.row',
+                h('div.col-md-6.text-left',
+                  h('h2', 'Saved items')
+                ),
+                h('div.col-md-6.text-right',
+                  h('button.btn.btn-outline-success.mr-2', h('i.icon-cloud-upload-alt.mr-1'),{
+                    type: 'button',
+                    onclick: function(){
+                      if(save_db.value().length < 1){
+                        return utils.toast('warning', 'nothing to upload');
+                      }
+                      let fstore = db.get('store').value();
+                      if(!fstore || !fstore.api || !fstore.id){
+                        msgbox.create_store(function(err,res){
+                          if(err){
+                            utils.toast('danger', 'Failed to create store')
+                            return ce(err);
+                          }
+                          utils.toast('success', 'New store created with '+ res.length + ' items')
+                        });
+                      } else {
+                        msgbox.update_store(function(err,res){
+                          if(err){
+                            utils.toast('danger', 'Failed to update store')
+                            return ce(err);
+                          }
+                          utils.toast('success', 'Store created with '+ res.length + ' items')
+                        });
+                      }
+                    }
+                  }, 'Export'),
+                  h('button.btn.btn-outline-success', h('i.icon-cloud-download-alt.mr-1'),{
+                    type: 'button',
+                    onclick: function(){
+                      let fstore = db.get('store').value();
+                      if(!fstore || !fstore.api || !fstore.id){
+                        return utils.toast('info', 'No items uploaded')
+                      }
+                      msgbox.fetch_store(function(err,res){
+                        if(err){
+                          utils.toast('danger', 'Failed to fetch store')
+                          return ce(err);
+                        }
+                        utils.toast('success', 'Store fetched '+ res.length + ' items');
+                        location.hash = 'saved'
+                      });
+
+                    }
+                  }, 'Import')
+                )
+              )
+
+          } else {
+            return h('h2', utils.capitalize(decodeURIComponent(title)) + ' Search Results')
+          }
+        },
         h('hr.w-100')
       )
     ),
