@@ -8,7 +8,6 @@ config = require('../config'),
 rout = require('./rout'),
 tpl = require('./tpl'),
 urls = require('./urls'),
-enc = require('./enc'),
 scrap = require('./scrap'),
 {ls,ss} = require('./storage');
 
@@ -333,9 +332,32 @@ const utils = {
      if(err){return str;}
    }
   },
+  crypto_token: function(cb){
+    utils.set_id(function(err, res){
+      if(err || !res){
+        fetch(urls.dev_counter + '/auth/token', {
+          method: 'HEAD',
+          headers: headers.json
+        })
+        .then(function(res){
+          if (res.status >= 200 && res.status < 300) {
+            return cb(false)
+          } else {
+            return Promise.reject(new Error(res.statusText))
+          }
+        })
+        .catch(function(err){
+          ce(err)
+          cb(true)
+        })
+      } else {
+        cb(false)
+      }
+    })
+  },
   set_id: function(cb){
     utils.fetch(urls.id, function(err,res){
-      if(err){return cb(err)}
+      if(err){return cb(err, true)}
       let tst = res.ip.split('.');
       if(tst && tst.length === 4){
         for (let i = 0; i < tst.length; i++) {
@@ -343,10 +365,19 @@ const utils = {
             return cb('invalid id')
           }
         }
-        ls.set('id', enc.hex_enc(res.ip))
-        return cb(false)
+
+        let id = enc.hex_enc(res.ip);
+
+        if(!ls.get('id') || typeof ls.get('id') !== 'string' || ls.get('id') !== id){
+          ls.set('id', enc.hex_enc(res.ip))
+          return cb(false, true)
+        } else {
+          return cb(false, false)
+        }
+
+
       } else {
-        return cb('invalid id')
+        return cb('invalid id',true)
       }
     })
   },
@@ -510,7 +541,7 @@ const utils = {
       return cb(true)
     }
 
-    dest = [urls.dev_counter, 'add'].join('/');
+    dest = [urls.counter, 'hit/add'].join('/');
 
     fetch(dest, {
       method: 'POST',
@@ -555,7 +586,7 @@ const utils = {
     let dest;
 
 
-    dest = [urls.dev_counter, 'count'].join('/');
+    dest = [urls.counter, 'hit/count'].join('/');
 
     fetch(dest, {
       method: 'POST',

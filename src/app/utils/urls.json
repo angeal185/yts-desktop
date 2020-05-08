@@ -19,7 +19,6 @@
   "staff_popular_db": "/app/db/staff_popular.json",
   "id": "https://api.ipify.org?format=json",
   "imdb": "https://m.imdb.com",
-  "msgbox": "https://jsonbox.io",
   "rt": "https://www.rottentomatoes.com",
   "comments": "https://www.intensedebate.com",
   "counter": "https://ytsdesktop.pythonanywhere.com",

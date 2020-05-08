@@ -6,25 +6,9 @@ _ = require('lodash'),
 pagination = require('./pagination'),
 enc = require('./enc'),
 urls = require('./urls'),
-msgbox = require('./msgbox'),
 {ls,ss} = require('./storage'),
 Glide = require('./glide');
 
-/*
-
-let msg = {
-  "name": "test 2",
-  "topic": "test message 2",
-  "msg": "test msg 2 created"
-}
-
-
-msgbox.send(msg ,function(err){
-  if(err){return cl(err)}
-  cl('msg sent');
-})
-
-*/
 
 const rout = {
   home: function(dest){
@@ -110,12 +94,6 @@ const rout = {
     _.forEach(['recent', 'release', 'popular'], function(i){
       new Glide('#'+ i +'_glide', config.glide).mount()
     })
-
-
-  },
-  contact: function(dest){
-
-    tpl.contact(dest)
 
 
   },
@@ -370,65 +348,7 @@ const rout = {
     let title = location.hash.split('/').pop(),
     search_res = h('div.row',
       h('div.col-12.text-center',
-        function(){
-          if(title === 'saved'){
-
-              return h('div.row',
-                h('div.col-md-6.text-left',
-                  h('h2', 'Saved items')
-                ),
-                h('div.col-md-6.text-right',
-                  h('button.btn.btn-outline-success.mr-2', h('i.icon-cloud-upload-alt.mr-1'),{
-                    type: 'button',
-                    onclick: function(){
-                      if(save_db.value().length < 1){
-                        return utils.toast('warning', 'nothing to upload');
-                      }
-                      let fstore = db.get('store').value();
-                      if(!fstore || !fstore.api || !fstore.id){
-                        msgbox.create_store(function(err,res){
-                          if(err){
-                            utils.toast('danger', 'Failed to create store')
-                            return ce(err);
-                          }
-                          utils.toast('success', 'New store created with '+ res.length + ' items')
-                        });
-                      } else {
-                        msgbox.update_store(function(err,res){
-                          if(err){
-                            utils.toast('danger', 'Failed to update store')
-                            return ce(err);
-                          }
-                          utils.toast('success', 'Store created with '+ res.length + ' items')
-                        });
-                      }
-                    }
-                  }, 'Export'),
-                  h('button.btn.btn-outline-success', h('i.icon-cloud-download-alt.mr-1'),{
-                    type: 'button',
-                    onclick: function(){
-                      let fstore = db.get('store').value();
-                      if(!fstore || !fstore.api || !fstore.id){
-                        return utils.toast('info', 'No items uploaded')
-                      }
-                      msgbox.fetch_store(function(err,res){
-                        if(err){
-                          utils.toast('danger', 'Failed to fetch store')
-                          return ce(err);
-                        }
-                        utils.toast('success', 'Store fetched '+ res.length + ' items');
-                        location.hash = 'saved'
-                      });
-
-                    }
-                  }, 'Import')
-                )
-              )
-
-          } else {
-            return h('h2', utils.capitalize(decodeURIComponent(title)) + ' Search Results')
-          }
-        },
+        h('h2', utils.capitalize(decodeURIComponent(title)) + ' Search Results'),
         h('hr.w-100')
       )
     ),

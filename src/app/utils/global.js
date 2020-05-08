@@ -1,45 +1,45 @@
 let dir = __dirname.split('/');
-dir = dir.slice(0,-2);
+dir = dir.slice(0, -2);
 global.base_dir = dir.join('/');
 
 global.js = JSON.stringify;
 global.jp = JSON.parse;
 
 const config = require('../config'),
-low = require('lowdb'),
-FileSync = require('lowdb/adapters/FileSync'),
-adapter = new FileSync(base_dir +'/app/db/db_main.json', {
-  serialize: function(obj){
-    return js(obj)
-  },
-  deserialize: function(data){
-    return jp(data)
-  }
-}),
-yts_adapter = new FileSync(base_dir +'/app/db/yts_db.json', {
-  serialize: function(obj){
-    return js(obj)
-  },
-  deserialize: function(data){
-    return jp(data)
-  }
-}),
-pag_adapter = new FileSync(base_dir +'/app/db/search_db.json', {
-  serialize: function(obj){
-    return js(obj)
-  },
-  deserialize: function(data){
-    return jp(data)
-  }
-}),
-stat_adapter = new FileSync(base_dir +'/app/db/status_db.json', {
-  serialize: function(obj){
-    return js(obj)
-  },
-  deserialize: function(data){
-    return jp(data)
-  }
-});
+  low = require('lowdb'),
+  FileSync = require('lowdb/adapters/FileSync'),
+  adapter = new FileSync(base_dir + '/app/db/db_main.json', {
+    serialize: function(obj) {
+      return js(obj)
+    },
+    deserialize: function(data) {
+      return jp(data)
+    }
+  }),
+  yts_adapter = new FileSync(base_dir + '/app/db/yts_db.json', {
+    serialize: function(obj) {
+      return js(obj)
+    },
+    deserialize: function(data) {
+      return jp(data)
+    }
+  }),
+  pag_adapter = new FileSync(base_dir + '/app/db/search_db.json', {
+    serialize: function(obj) {
+      return js(obj)
+    },
+    deserialize: function(data) {
+      return jp(data)
+    }
+  }),
+  stat_adapter = new FileSync(base_dir + '/app/db/status_db.json', {
+    serialize: function(obj) {
+      return js(obj)
+    },
+    deserialize: function(data) {
+      return jp(data)
+    }
+  });
 
 global.db = low(adapter);
 global.yts_db = low(yts_adapter);
@@ -47,26 +47,20 @@ global.pag_db = low(pag_adapter);
 global.status_db = low(stat_adapter);
 
 db.defaults({
-  history:[],
+  history: [],
   saved: [],
   img_cache: [],
   subs_cache: [],
-  hits:{},
-  reviews_cache: [],
-  outbox: {},
-  inbox: {},
-  crypto: {},
-  ecdh_keychain: [],
-  ecdsa_keychain: [],
-  rsa_oaep_keychain: []
+  hits: {},
+  reviews_cache: []
 }).write();
 
 yts_db.defaults({
-  movies:[]
+  movies: []
 }).write();
 
 pag_db.defaults({
-  search:[]
+  search: []
 }).write();
 
 global.movie_db = yts_db.get('movies');
@@ -82,7 +76,7 @@ global.update_cnt = 0;
 //global vars
 
 console.dev = function(arg) {
-  if(config.settings.dev){
+  if (config.settings.dev) {
     return cl(arg)
   }
 };
@@ -97,7 +91,7 @@ global.headers = {
   json_cors: {
     'Content-Type': 'application/json',
     'Accept-Encoding': 'gzip',
-    'Cache-Control': 'max-age='+ config.settings.cors_cache_json,
+    'Cache-Control': 'max-age=' + config.settings.cors_cache_json,
     'Sec-Fetch-Dest': 'object',
     'Sec-Fetch-mode': 'cors',
     'Sec-Fetch-Site': 'cross-site'
@@ -105,7 +99,7 @@ global.headers = {
   html_cors: {
     'Content-Type': 'text/html',
     'Accept-Encoding': 'gzip',
-    'Cache-Control': 'max-age='+ config.settings.cors_cache_html,
+    'Cache-Control': 'max-age=' + config.settings.cors_cache_html,
     'Sec-Fetch-Dest': 'document',
     'Sec-Fetch-mode': 'cors',
     'Sec-Fetch-Site': 'cross-site'
@@ -113,9 +107,4 @@ global.headers = {
 }
 
 
-
-//db.set('hits', {}).write()
-cl(
-//  db.get('hits').value()
-)
 global.utils = require('./index');
